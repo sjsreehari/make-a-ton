@@ -56,11 +56,14 @@ export interface Invoice {
   customerId: string;
   customer?: { id: string; name: string; email: string };
   status: "DRAFT" | "CONFIRMED" | "PAID" | "OVERDUE" | "CANCELLED";
+  displayStatus?: "DRAFT" | "CONFIRMED" | "SENT" | "PARTIAL" | "PAID" | "OVERDUE" | "CANCELLED" | "REVERSED";
   periodStart?: string;
   periodEnd?: string;
   issueDate?: string;
   dueDate: string;
   subtotal?: string;
+  discountTotal?: string;
+  taxTotal?: string;
   taxAmount?: string;
   discountAmount?: string;
   total: string;
@@ -302,6 +305,18 @@ export const api = {
     },
     pdfUrl(id: string) {
       return `/api/v1/invoices/${id}/pdf`;
+    },
+    async openPdf(id: string) {
+      const tab = window.open("about:blank", "_blank");
+      const auth = await getAuthHeader();
+      const response = await fetch(`/api/v1/invoices/${encodeURIComponent(id)}/pdf`, { headers: auth ? { Authorization: auth } : {} });
+      if (!response.ok) {
+        tab?.close();
+        throw new Error(`Could not load invoice PDF (${response.status})`);
+      }
+      const url = URL.createObjectURL(await response.blob());
+      if (tab) tab.location.href = url;
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
     },
     async createCreditNote(invoiceId: string, dto: { amount: number; reason: string }) {
       return request<any>(`/invoices/${invoiceId}/credit-notes`, {
