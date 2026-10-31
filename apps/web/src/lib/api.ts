@@ -123,10 +123,33 @@ export interface Customer {
 }
 
 // Client helper that automatically ensures valid Bearer token for local developer convenience
-async function getAuthHeader(): Promise<string | null> {
+function isTokenValid(token: string | null): boolean {
+  if (!token) return false;
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return false;
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    const payload = JSON.parse(jsonPayload);
+    if (!payload.exp) return false;
+    // Buffer by 15 seconds to avoid racing on edge of expiration
+    return payload.exp * 1000 > Date.now() + 15000;
+  } catch {
+    return false;
+  }
+}
+
+async function getAuthHeader(forceFresh = false): Promise<string | null> {
   if (typeof window === "undefined") return null;
   let token = localStorage.getItem("billpilot_token");
-  if (!token) {
+
+  if (!token || !isTokenValid(token) || forceFresh) {
     try {
       const res = await fetch("/api/v1/auth/login", {
         method: "POST",
@@ -136,7 +159,10 @@ async function getAuthHeader(): Promise<string | null> {
       if (res.ok) {
         const data = await res.json();
         token = data.accessToken;
-        if (token) localStorage.setItem("billpilot_token", token);
+        if (token) {
+          localStorage.setItem("billpilot_token", token);
+          if (data.user) localStorage.setItem("billpilot_user", JSON.stringify(data.user));
+        }
       }
     } catch {
       // fallback
@@ -145,8 +171,8 @@ async function getAuthHeader(): Promise<string | null> {
   return token ? `Bearer ${token}` : null;
 }
 
-async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const auth = await getAuthHeader();
+async function request<T>(endpoint: string, options: RequestInit = {}, isRetry = false): Promise<T> {
+  const auth = await getAuthHeader(isRetry);
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(auth ? { Authorization: auth } : {}),
@@ -157,6 +183,14 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     ...options,
     headers,
   });
+
+  if (res.status === 401 && !isRetry) {
+    // If token expired, purge it and retry automatically once with a fresh token
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("billpilot_token");
+    }
+    return request<T>(endpoint, options, true);
+  }
 
   if (!res.ok) {
     const errorBody = await res.json().catch(() => ({}));
@@ -446,7 +480,7 @@ export const api = {
       return request<{
         totalAmountAtRisk: number;
         totalFindings: number;
-        byKind: Record<string, { count: number; amount: number }>;
+        byKind?: Record<string, { count: number; amount: number }>;
         findings: LeakageFinding[];
       }>("/insights/leakage");
     },
@@ -454,6 +488,7 @@ export const api = {
       return request<{
         totalAmountAtRisk: number;
         totalFindings: number;
+        byKind?: Record<string, { count: number; amount: number }>;
         findings: LeakageFinding[];
       }>("/insights/leakage/scan", { method: "POST" });
     },
