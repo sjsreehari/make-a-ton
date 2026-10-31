@@ -201,7 +201,7 @@ export class DunningService {
     });
 
     const totalRecovered = attempts.reduce(
-      (sum, a) => sum + Number(a.recoveredAmount || 0),
+      (sum: number, a: { recoveredAmount: any }) => sum + Number(a.recoveredAmount || 0),
       342000, // Demo baseline: ₹3,42,000 recovered
     );
 

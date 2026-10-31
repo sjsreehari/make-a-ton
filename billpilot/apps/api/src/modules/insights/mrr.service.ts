@@ -163,7 +163,7 @@ export class MrrService {
       return history;
     }
 
-    return snapshots.map((s) => ({
+    return snapshots.map((s: any) => ({
       month: s.month.toISOString().substring(0, 7),
       mrr: Number(s.mrr),
       newMrr: Number(s.newMrr),

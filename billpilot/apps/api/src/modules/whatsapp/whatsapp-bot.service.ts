@@ -189,7 +189,7 @@ export class WhatsAppBotService {
     });
 
     const totalDue = overdueInvoices.reduce(
-      (sum, inv) => sum + Number(inv.amountDue),
+      (sum: number, inv: { amountDue: any }) => sum + Number(inv.amountDue),
       0,
     );
 
