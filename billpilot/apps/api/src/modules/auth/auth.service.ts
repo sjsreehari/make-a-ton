@@ -218,10 +218,13 @@ export class AuthService {
       expiresIn: this.config.get<string>('JWT_ACCESS_TTL', '15m'),
     });
 
-    const refreshToken = this.jwtService.sign(payload, {
-      secret: this.config.get<string>('JWT_REFRESH_SECRET', 'changeme-refresh-secret-min-32-chars'),
-      expiresIn: this.config.get<string>('JWT_REFRESH_TTL', '7d'),
-    });
+    const refreshToken = this.jwtService.sign(
+      { ...payload, jti: crypto.randomUUID() },
+      {
+        secret: this.config.get<string>('JWT_REFRESH_SECRET', 'changeme-refresh-secret-min-32-chars'),
+        expiresIn: this.config.get<string>('JWT_REFRESH_TTL', '7d'),
+      },
+    );
 
     const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
     const expiresAt = new Date(Date.now() + 7 * 86400000);

@@ -30,6 +30,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
       code = exception.code;
       message = exception.message;
       details = exception.details;
+    } else if (exception instanceof ZodError || (exception as any)?.name === 'ZodError' || Array.isArray((exception as any)?.errors)) {
+      status = HttpStatus.BAD_REQUEST;
+      code = ErrorCode.VALIDATION_FAILED;
+      message = (exception as any).errors?.[0]?.message || 'Validation failed';
+      details = (exception as any).errors;
     } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       const res = exception.getResponse();

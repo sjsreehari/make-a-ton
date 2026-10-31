@@ -113,10 +113,13 @@ importers:
     devDependencies:
       '@nestjs/cli':
         specifier: ^10.4.5
-        version: 10.4.9(@swc/core@1.16.21)
+        version: 10.4.9(@swc/core@1.16.21)(esbuild@0.28.2)
       '@nestjs/testing':
         specifier: ^10.4.4
         version: 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.22)(@nestjs/platform-express@10.4.22)
+      '@swc/core':
+        specifier: ^1.16.21
+        version: 1.16.21
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.6
@@ -141,6 +144,9 @@ importers:
       typescript:
         specifier: ^5.6.3
         version: 5.9.3
+      unplugin-swc:
+        specifier: ^2.0.0
+        version: 2.0.0(@swc/core@1.16.21)(esbuild@0.28.2)(rollup@4.67.2)(vite@5.4.21(@types/node@20.19.43)(terser@5.51.2))(webpack@5.97.1(@swc/core@1.16.21)(esbuild@0.28.2))
       vitest:
         specifier: ^2.1.3
         version: 2.1.9(@types/node@20.19.43)(terser@5.51.2)
@@ -786,6 +792,9 @@ packages:
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
+
+  '@jridgewell/remapping@2.3.5':
+    resolution: {integrity: sha512-LI9u/+laYG4Ds1TDKSJW2YPrIlcVYOwi2fUC6xB43lueCjgxV4lffOCZCtYFiH6TNOX+tQKXx97T4IKHbhyHEQ==}
 
   '@jridgewell/resolve-uri@3.1.2':
     resolution: {integrity: sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==}
@@ -1539,6 +1548,18 @@ packages:
       react:
         optional: true
       react-redux:
+        optional: true
+
+  '@rolldown/pluginutils@1.0.1':
+    resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
+
+  '@rollup/pluginutils@5.5.1':
+    resolution: {integrity: sha512-P9ZvnfouRu4MSC+ilERaw6FmZs8zqKhpHxEs4aGDGWQAMzQGXnhvCSvoNwokfNvdt7t3Y5Y4p6gStQgezeIqug==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
+    peerDependenciesMeta:
+      rollup:
         optional: true
 
   '@rollup/rollup-android-arm-eabi@4.67.2':
@@ -3024,6 +3045,9 @@ packages:
     resolution: {integrity: sha512-MMdARuVEQziNTeJD8DgMqmhwR11BRQ/cBP+pLtYdSTnf3MIO8fFeiINEbX36ZdNlfU/7A9f3gUw49B3oQsvwBA==}
     engines: {node: '>=4.0'}
 
+  estree-walker@2.0.2:
+    resolution: {integrity: sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w==}
+
   estree-walker@3.0.3:
     resolution: {integrity: sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g==}
 
@@ -3581,6 +3605,10 @@ packages:
 
   lines-and-columns@1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
+
+  load-tsconfig@0.2.5:
+    resolution: {integrity: sha512-IXO6OCs9yg8tMKzfPZ1YmheJbZCiEsnBdcB03l0OcfK9prKnJb96siuHCr5Fl37/yo9DnKU+TLpxzTUspw9shg==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
   loader-runner@4.3.2:
     resolution: {integrity: sha512-DFEqQ3ihfS9blba08cLfYf1NRAIEm+dDjic073DRDc3/JspI/8wYmtDsHwd3+4hwvdxSK7PGaElfTmm0awWJ4w==}
@@ -4746,6 +4774,48 @@ packages:
     resolution: {integrity: sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ==}
     engines: {node: '>= 0.8'}
 
+  unplugin-swc@2.0.0:
+    resolution: {integrity: sha512-hMdGJEtkwiJhzuXXx4Nb1XYDeD9KG4+P7KZOaErJTpZNYhTo1sbWIsXb+u410zXyaqH00veNX4UxOr6TpUwNiQ==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    peerDependencies:
+      '@swc/core': ^1.2.108
+
+  unplugin@3.7.0:
+    resolution: {integrity: sha512-GrM2uq3DQo3hvLU2FjeYhooJ8BY9N6j1Fbzgx7Pta3VVJevsD3VP4dPjZkZOS0mLvN8w9zzr9OlP+31bSMyuLw==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+    peerDependencies:
+      '@farmfe/core': '*'
+      '@rsbuild/core': '*'
+      '@rspack/core': '*'
+      bun-types-no-globals: '*'
+      esbuild: '*'
+      rolldown: '*'
+      rollup: '*'
+      unloader: '*'
+      vite: '*'
+      webpack: '*'
+    peerDependenciesMeta:
+      '@farmfe/core':
+        optional: true
+      '@rsbuild/core':
+        optional: true
+      '@rspack/core':
+        optional: true
+      bun-types-no-globals:
+        optional: true
+      esbuild:
+        optional: true
+      rolldown:
+        optional: true
+      rollup:
+        optional: true
+      unloader:
+        optional: true
+      vite:
+        optional: true
+      webpack:
+        optional: true
+
   unrs-resolver@1.12.2:
     resolution: {integrity: sha512-dmlRxBJJayXjqTwC+JtF1HhJmgf3ftQ3YejFcZrf4+KKtJv0qDsK1pjqaaVjG7wJ5NJ6UVP1OqRMQ71Z4C3rxQ==}
 
@@ -4884,6 +4954,9 @@ packages:
   webpack-sources@3.7.0:
     resolution: {integrity: sha512-PdUhbCycwEgiS1hB/FBDksWKg/ashAIuJKqwdbPn8/dFVgU5LxQiBvG0js6VRRIzPujMrStYCczywp82P0KWng==}
     engines: {node: '>=10.13.0'}
+
+  webpack-virtual-modules@0.6.2:
+    resolution: {integrity: sha512-66/V2i5hQanC51vBQKPH4aI8NMAcBW59FVBs+rC7eGHupMyfn34q7rZIE+ETlJ+XTevqfUhVVBgSUNSW2flEUQ==}
 
   webpack@5.97.1:
     resolution: {integrity: sha512-EksG6gFY3L1eFMROS/7Wzgrii5mBAFe4rIr3r2BTfo7bcc+DWwFZ4OJ/miOuHJO/A85HwyI4eQ0F6IKXesO7Fg==}
@@ -5350,6 +5423,11 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.6.0
       '@jridgewell/trace-mapping': 0.3.31
 
+  '@jridgewell/remapping@2.3.5':
+    dependencies:
+      '@jridgewell/gen-mapping': 0.3.13
+      '@jridgewell/trace-mapping': 0.3.31
+
   '@jridgewell/resolve-uri@3.1.2': {}
 
   '@jridgewell/source-map@0.3.11':
@@ -5414,7 +5492,7 @@ snapshots:
       bullmq: 5.81.5
       tslib: 2.8.1
 
-  '@nestjs/cli@10.4.9(@swc/core@1.16.21)':
+  '@nestjs/cli@10.4.9(@swc/core@1.16.21)(esbuild@0.28.2)':
     dependencies:
       '@angular-devkit/core': 17.3.11(chokidar@3.6.0)
       '@angular-devkit/schematics': 17.3.11(chokidar@3.6.0)
@@ -5424,7 +5502,7 @@ snapshots:
       chokidar: 3.6.0
       cli-table3: 0.6.5
       commander: 4.1.1
-      fork-ts-checker-webpack-plugin: 9.0.2(typescript@5.7.2)(webpack@5.97.1(@swc/core@1.16.21))
+      fork-ts-checker-webpack-plugin: 9.0.2(typescript@5.7.2)(webpack@5.97.1(@swc/core@1.16.21)(esbuild@0.28.2))
       glob: 10.4.5
       inquirer: 8.2.6
       node-emoji: 1.11.0
@@ -5433,7 +5511,7 @@ snapshots:
       tsconfig-paths: 4.2.0
       tsconfig-paths-webpack-plugin: 4.2.0
       typescript: 5.7.2
-      webpack: 5.97.1(@swc/core@1.16.21)
+      webpack: 5.97.1(@swc/core@1.16.21)(esbuild@0.28.2)
       webpack-node-externals: 3.0.0
     optionalDependencies:
       '@swc/core': 1.16.21
@@ -6031,6 +6109,16 @@ snapshots:
       react: 19.3.1
       react-redux: 9.3.1(@types/react@19.3.0)(react@19.3.1)(redux@5.0.1)
 
+  '@rolldown/pluginutils@1.0.1': {}
+
+  '@rollup/pluginutils@5.5.1(rollup@4.67.2)':
+    dependencies:
+      '@types/estree': 1.0.10
+      estree-walker: 2.0.2
+      picomatch: 4.0.7
+    optionalDependencies:
+      rollup: 4.67.2
+
   '@rollup/rollup-android-arm-eabi@4.67.2':
     optional: true
 
@@ -6172,10 +6260,8 @@ snapshots:
       '@swc/core-win32-arm64-msvc': 1.16.21
       '@swc/core-win32-ia32-msvc': 1.16.21
       '@swc/core-win32-x64-msvc': 1.16.21
-    optional: true
 
-  '@swc/counter@0.1.3':
-    optional: true
+  '@swc/counter@0.1.3': {}
 
   '@swc/helpers@0.5.15':
     dependencies:
@@ -6184,7 +6270,6 @@ snapshots:
   '@swc/types@0.1.28':
     dependencies:
       '@swc/counter': 0.1.3
-    optional: true
 
   '@tailwindcss/container-queries@0.1.1(tailwindcss@3.4.19(tsx@4.23.15))':
     dependencies:
@@ -7652,6 +7737,8 @@ snapshots:
 
   estraverse@5.3.0: {}
 
+  estree-walker@2.0.2: {}
+
   estree-walker@3.0.3:
     dependencies:
       '@types/estree': 1.0.10
@@ -7801,7 +7888,7 @@ snapshots:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
 
-  fork-ts-checker-webpack-plugin@9.0.2(typescript@5.7.2)(webpack@5.97.1(@swc/core@1.16.21)):
+  fork-ts-checker-webpack-plugin@9.0.2(typescript@5.7.2)(webpack@5.97.1(@swc/core@1.16.21)(esbuild@0.28.2)):
     dependencies:
       '@babel/code-frame': 7.29.7
       chalk: 4.1.2
@@ -7816,7 +7903,7 @@ snapshots:
       semver: 7.8.5
       tapable: 2.3.3
       typescript: 5.7.2
-      webpack: 5.97.1(@swc/core@1.16.21)
+      webpack: 5.97.1(@swc/core@1.16.21)(esbuild@0.28.2)
 
   form-data@4.0.6:
     dependencies:
@@ -8326,6 +8413,8 @@ snapshots:
   lilconfig@3.1.4: {}
 
   lines-and-columns@1.2.4: {}
+
+  load-tsconfig@0.2.5: {}
 
   loader-runner@4.3.2: {}
 
@@ -9017,14 +9106,14 @@ snapshots:
       ajv: 6.15.0
       ajv-keywords: 3.5.2(ajv@6.15.0)
 
-  schema-utils@4.8.1(webpack@5.97.1(@swc/core@1.16.21)):
+  schema-utils@4.8.1(webpack@5.97.1(@swc/core@1.16.21)(esbuild@0.28.2)):
     dependencies:
       '@types/json-schema': 7.0.15
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       ajv-keywords: 5.1.0(ajv@8.20.0)
     optionalDependencies:
-      webpack: 5.97.1(@swc/core@1.16.21)
+      webpack: 5.97.1(@swc/core@1.16.21)(esbuild@0.28.2)
 
   semver@6.3.1: {}
 
@@ -9362,15 +9451,16 @@ snapshots:
 
   tapable@2.3.3: {}
 
-  terser-webpack-plugin@5.6.1(@swc/core@1.16.21)(webpack@5.97.1(@swc/core@1.16.21)):
+  terser-webpack-plugin@5.6.1(@swc/core@1.16.21)(esbuild@0.28.2)(webpack@5.97.1(@swc/core@1.16.21)(esbuild@0.28.2)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
-      schema-utils: 4.8.1(webpack@5.97.1(@swc/core@1.16.21))
+      schema-utils: 4.8.1(webpack@5.97.1(@swc/core@1.16.21)(esbuild@0.28.2))
       terser: 5.51.2
-      webpack: 5.97.1(@swc/core@1.16.21)
+      webpack: 5.97.1(@swc/core@1.16.21)(esbuild@0.28.2)
     optionalDependencies:
       '@swc/core': 1.16.21
+      esbuild: 0.28.2
 
   terser@5.51.2:
     dependencies:
@@ -9543,6 +9633,36 @@ snapshots:
 
   unpipe@1.0.0: {}
 
+  unplugin-swc@2.0.0(@swc/core@1.16.21)(esbuild@0.28.2)(rollup@4.67.2)(vite@5.4.21(@types/node@20.19.43)(terser@5.51.2))(webpack@5.97.1(@swc/core@1.16.21)(esbuild@0.28.2)):
+    dependencies:
+      '@rollup/pluginutils': 5.5.1(rollup@4.67.2)
+      '@swc/core': 1.16.21
+      load-tsconfig: 0.2.5
+      unplugin: 3.7.0(esbuild@0.28.2)(rollup@4.67.2)(vite@5.4.21(@types/node@20.19.43)(terser@5.51.2))(webpack@5.97.1(@swc/core@1.16.21)(esbuild@0.28.2))
+    transitivePeerDependencies:
+      - '@farmfe/core'
+      - '@rsbuild/core'
+      - '@rspack/core'
+      - bun-types-no-globals
+      - esbuild
+      - rolldown
+      - rollup
+      - unloader
+      - vite
+      - webpack
+
+  unplugin@3.7.0(esbuild@0.28.2)(rollup@4.67.2)(vite@5.4.21(@types/node@20.19.43)(terser@5.51.2))(webpack@5.97.1(@swc/core@1.16.21)(esbuild@0.28.2)):
+    dependencies:
+      '@jridgewell/remapping': 2.3.5
+      '@rolldown/pluginutils': 1.0.1
+      picomatch: 4.0.7
+      webpack-virtual-modules: 0.6.2
+    optionalDependencies:
+      esbuild: 0.28.2
+      rollup: 4.67.2
+      vite: 5.4.21(@types/node@20.19.43)(terser@5.51.2)
+      webpack: 5.97.1(@swc/core@1.16.21)(esbuild@0.28.2)
+
   unrs-resolver@1.12.2:
     dependencies:
       napi-postinstall: 0.3.7
@@ -9703,7 +9823,9 @@ snapshots:
 
   webpack-sources@3.7.0: {}
 
-  webpack@5.97.1(@swc/core@1.16.21):
+  webpack-virtual-modules@0.6.2: {}
+
+  webpack@5.97.1(@swc/core@1.16.21)(esbuild@0.28.2):
     dependencies:
       '@types/eslint-scope': 3.7.7
       '@types/estree': 1.0.10
@@ -9725,7 +9847,7 @@ snapshots:
       neo-async: 2.6.2
       schema-utils: 3.3.0
       tapable: 2.3.3
-      terser-webpack-plugin: 5.6.1(@swc/core@1.16.21)(webpack@5.97.1(@swc/core@1.16.21))
+      terser-webpack-plugin: 5.6.1(@swc/core@1.16.21)(esbuild@0.28.2)(webpack@5.97.1(@swc/core@1.16.21)(esbuild@0.28.2))
       watchpack: 2.6.3
       webpack-sources: 3.7.0
     transitivePeerDependencies:

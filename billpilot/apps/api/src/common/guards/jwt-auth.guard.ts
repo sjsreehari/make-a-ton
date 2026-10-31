@@ -6,11 +6,15 @@ import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
+  private readonly reflector: Reflector;
+
   constructor(
-    private readonly reflector: Reflector,
+    reflector: Reflector,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
-  ) {}
+  ) {
+    this.reflector = reflector || new Reflector();
+  }
 
   canActivate(context: ExecutionContext): boolean {
     const isPublic = this.reflector
