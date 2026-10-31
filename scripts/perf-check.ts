@@ -80,12 +80,20 @@ async function runBenchmark() {
     console.log('-'.repeat(80));
 
     // 1. Run EXPLAIN
-    const explainRows = (await prisma.$queryRawUnsafe(`EXPLAIN ${q.sql}`)) as ExplainRow[];
+    const rawRows = (await prisma.$queryRawUnsafe(`EXPLAIN ${q.sql}`)) as any[];
+    const explainRows = rawRows.map((r) => ({
+      table: String(r.table ?? r.f2 ?? 'N/A'),
+      type: String(r.type ?? r.f4 ?? 'N/A'),
+      key: r.key ?? r.f6 ? String(r.key ?? r.f6) : 'NONE',
+      rows: Number(r.rows ?? r.f9 ?? 0),
+      extra: String(r.Extra ?? r.f11 ?? ''),
+    }));
+
     console.log('EXPLAIN Plan:');
     for (const r of explainRows) {
-      const tableStr = String(r.table || 'derived').padEnd(20);
-      const typeStr = String(r.type || 'ALL').padEnd(10);
-      const keyStr = String(r.key || 'NONE').padEnd(30);
+      const tableStr = r.table.padEnd(20);
+      const typeStr = r.type.padEnd(10);
+      const keyStr = r.key.padEnd(30);
       console.log(`  Table: ${tableStr} Type: ${typeStr} Key: ${keyStr} Rows: ${r.rows}`);
     }
 

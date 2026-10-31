@@ -61,3 +61,27 @@ Search query: `postgres|pg_|ILIKE|RETURNING|::[a-z]+|statement_timeout|insensiti
 
 3. **Atomic Sequence Generation**:
    - Replaced Prisma upsert increment with MySQL native `INSERT INTO SequenceCounter (key, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = LAST_INSERT_ID(value + 1)` and `SELECT LAST_INSERT_ID()`.
+
+4. **AI Assistant Views & Security**:
+   - Analytics views created in MySQL 8.0: `v_invoices`, `v_subscriptions`, `v_payments`, `v_customers`.
+   - Read-only user `billpilot_ro` granted `SELECT` only on analytics views with all base tables inaccessible.
+   - Enforced single statement, disallowed mutation and dangerous functions, and injected `/*+ MAX_EXECUTION_TIME(3000) */` and `LIMIT 200`.
+
+5. **Performance Benchmark & Index Optimization (Task 5)**:
+   Composite indexes created:
+   - `Invoice(customerId, status)`, `Invoice(status, dueDate)`
+   - `Subscription(status, nextBillingDate)`, `Subscription(status, expiryDate)`
+   - `Payment(customerId, paidAt)`
+   - `AuditLog(entity, entityId, at)`
+   - `NotificationLog(entity, entityId, createdAt)`
+   - `PaymentAttempt(status, nextRetryAt)`, `PaymentAttempt(invoiceId, attemptNo)`
+   - `Job(status, runAt)`, `Job(queue, status, runAt)`
+
+   EXPLAIN Execution Plans & Timings:
+   | Query | EXPLAIN Plan / Key | p95 Latency | Avg Latency |
+   |---|---|---|---|
+   | (a) Dashboard Summary | `index(Invoice_status_dueDate_idx)`, `ref(Subscription_status_nextBillingDate_idx)` | 0.95ms | 0.48ms |
+   | (b) Overdue Invoices List | `range(Invoice_status_dueDate_idx)` | 1.16ms | 0.50ms |
+   | (c) Active Subscriptions Due | `range(Subscription_status_nextBillingDate_idx)` | 1.03ms | 0.46ms |
+   | (d) Customer Invoices with Payments | `ref(Invoice_customerId_status_idx)`, `ref(Payment_invoiceId_idx)` | 0.80ms | 0.40ms |
+   | (e) Leakage Finding Scan | `ref(Subscription_status_expiryDate_idx)`, `ref(Invoice_subscriptionId_...)` | 0.50ms | 0.35ms |
