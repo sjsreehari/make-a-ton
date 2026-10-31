@@ -1,0 +1,31 @@
+Date,Narration,Reference,Amount,Counterparty
+2026-10-01,Subscription Payment INV-DEMO-001,TXN100000001,3538.82,Acme Software
+2026-10-02,Subscription Payment INV-DEMO-002,TXN100000002,11798.82,Zeta Dynamics
+2026-10-03,Subscription Payment INV-DEMO-003,TXN100000003,35398.82,HyperScale Labs
+2026-10-04,Subscription Payment INV-DEMO-004,TXN100000004,353998.82,Apex Cloud Tech
+2026-10-05,Subscription Payment INV-DEMO-005,TXN100000005,234.82,FinTech Horizon
+2026-10-06,Subscription Payment INV-DEMO-006,TXN100000006,1768.82,BlueSky Retail
+2026-10-07,Subscription Payment INV-DEMO-007,TXN100000007,3538.82,Orbit Logix
+2026-10-08,Subscription Payment INV-DEMO-008,TXN100000008,11798.82,Quantum Data AI
+2026-10-09,Subscription Payment INV-DEMO-009,TXN100000009,35398.82,Pulse Media
+2026-10-10,Subscription Payment INV-DEMO-010,TXN100000010,353998.82,Starlight Bio
+2026-10-11,Subscription Payment INV-DEMO-011,TXN100000011,234.82,Veritas Sec
+2026-10-12,Subscription Payment INV-DEMO-012,TXN100000012,1768.82,Omni Global
+2026-10-13,Subscription Payment INV-DEMO-013,TXN100000013,3538.82,Catalyst Health
+2026-10-14,Subscription Payment INV-DEMO-014,TXN100000014,11798.82,Terra Networks
+2026-10-15,Subscription Payment INV-DEMO-015,TXN100000015,35398.82,Nexus IoT
+2026-10-16,Invoice Settlement INV-DEMO-016,TXN100000016,3538.82,Acme Software
+2026-10-17,Invoice Settlement INV-DEMO-017,TXN100000017,11798.82,Zeta Dynamics
+2026-10-18,Invoice Settlement INV-DEMO-018,TXN100000018,35398.82,HyperScale Labs
+2026-10-19,Invoice Settlement INV-DEMO-019,TXN100000019,353998.82,Apex Cloud Tech
+2026-10-20,Invoice Settlement INV-DEMO-020,TXN100000020,234.82,FinTech Horizon
+2026-10-21,Monthly Bank Account Maintenance Fee,BNKFEE0001,-500.00,HDFC Bank
+2026-10-22,Payment Gateway Platform Charges,PGCHG0001,-1250.00,Razorpay Software
+2026-10-23,Quarterly Interest Credit,INTCR0001,14250.00,HDFC Bank
+2026-10-24,Inward NEFT Unidentifiable Remittance,NEFT99001,5000.00,Unknown Remitter
+2026-10-25,AWS Cloud Infrastructure Hosting,AWS000912,-45200.00,Amazon Web Services
+2026-10-26,Twilio WhatsApp Notification Messaging,TWLO0012,-3400.00,Twilio Inc
+2026-10-27,Corporate Office Indiranagar Internet,ISP00891,-2999.00,ACT Fibernet
+2026-10-28,Statutory GST TDS Deduction Return,TDS00031,-4200.00,Government of India
+2026-10-29,Vendor Security Penetration Test,VND00182,-35000.00,CertIn Security Labs
+2026-10-30,Internal Treasury Reserve Transfer,TRF00011,100000.00,BrightLoop Treasury
