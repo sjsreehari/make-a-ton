@@ -219,7 +219,7 @@ export class TemplatesService implements OnModuleInit {
   async seedDefaultTemplates() {
     for (const t of DEFAULT_TEMPLATES) {
       const existing = await this.prisma.messageTemplate.findFirst({
-        where: { key: t.key, channel: t.channel as any },
+        where: { key: t.key },
       });
       if (!existing) {
         await this.prisma.messageTemplate.create({
