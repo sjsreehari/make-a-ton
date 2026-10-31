@@ -37,12 +37,12 @@ Search query: `postgres|pg_|ILIKE|RETURNING|::[a-z]+|statement_timeout|insensiti
 |---|---|---|---|
 | `.env.example:2-3` | PostgreSQL URLs for `DATABASE_URL` and read-only | **Rewrite** to `mysql://billpilot:billpilot@localhost:3306/billpilot` | [ ] |
 | `docker-compose.yml:2-15` | `postgres:16` service and `pgdata` volume | **Rewrite** to `mysql:8.0` service with `mysqldata` | [ ] |
-| `docker/postgres/init.sql` | PostgreSQL `pg_roles` and `GRANT` syntax | **Rewrite** into `docker/mysql/init.sql` for MySQL 8 | [ ] |
-| `apps/api/src/common/prisma/prisma.service.ts:20` | Logger message `'Disconnected from PostgreSQL'` | **Rewrite** to `'Disconnected from MySQL'` | [ ] |
-| `apps/api/src/modules/ai/guard/sql-validator.service.ts:23-24` | Deny-list checking `pg_`, `information_schema` | **Rewrite** to include MySQL system databases and functions (`sleep(`, `benchmark(`, `sys.`, `performance_schema`, etc.) | [ ] |
-| `apps/api/src/modules/auth/auth.service.ts:23` | Case-insensitive email uniqueness check | **Keep** logic (MySQL collation `utf8mb4_0900_ai_ci` handles this natively) | [ ] |
-| `apps/api/src/modules/health/health.controller.ts:20` | `this.prisma.$queryRaw\`SELECT 1\`` | **Keep** (valid on MySQL 8.0) | [ ] |
-| `apps/web/src/app/globals.css:85` | `::selection` selector | **Keep** (CSS pseudo-element, not SQL) | [ ] |
+| `docker/postgres/init.sql` | PostgreSQL `pg_roles` and `GRANT` syntax | **Rewrite** into `docker/mysql/init.sql` for MySQL 8 | [x] |
+| `apps/api/src/common/prisma/prisma.service.ts:20` | Logger message `'Disconnected from PostgreSQL'` | **Rewrite** to `'Disconnected from MySQL'` | [x] |
+| `apps/api/src/modules/ai/guard/sql-validator.service.ts:23-24` | Deny-list checking `pg_`, `information_schema` | **Rewrite** to include MySQL system databases and functions (`sleep(`, `benchmark(`, `sys.`, `performance_schema`, etc.) | [x] |
+| `apps/api/src/modules/auth/auth.service.ts:23` | Case-insensitive email uniqueness check | **Keep** logic (MySQL collation `utf8mb4_0900_ai_ci` handles this natively) | [x] |
+| `apps/api/src/modules/health/health.controller.ts:20` | `this.prisma.$queryRaw\`SELECT 1\`` | **Keep** (valid on MySQL 8.0) | [x] |
+| `apps/web/src/app/globals.css:85` | `::selection` selector | **Keep** (CSS pseudo-element, not SQL) | [x] |
 | `apps/web/src/app/enterprise/page.tsx:138,195` | Marketing copy mentions of PostgreSQL 16 | **Rewrite** copy | [ ] |
 | Documentation files (`PROJECT.txt`, `README.md`, `docs/*`) | References to PostgreSQL, psql, pgdata | **Rewrite** in Task 7 | [ ] |
 | `packages/shared/src/constants.ts:14` | `AI_STATEMENT_TIMEOUT_MS = 3000` | **Keep** (used for MySQL `/*+ MAX_EXECUTION_TIME(3000) */`) | [ ] |
