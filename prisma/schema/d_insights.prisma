@@ -45,6 +45,7 @@ model NotificationLog {
   @@index([customerId, createdAt])
   @@index([status])
   @@index([entity, entityId])
+  @@index([entity, entityId, createdAt])
   @@unique([template, entity, entityId, channel])
 }
 
