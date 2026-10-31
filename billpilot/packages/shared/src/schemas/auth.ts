@@ -36,3 +36,4 @@ export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export const refreshTokenSchema = z.object({
   refreshToken: z.string().optional(),
 });
+
