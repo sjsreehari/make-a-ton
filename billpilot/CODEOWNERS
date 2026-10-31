@@ -1,0 +1,57 @@
+# BillPilot Code Owners
+# Person A — Auth, Catalog, Subscriptions, Reports
+/apps/api/src/modules/auth/         @person-a
+/apps/api/src/modules/users/        @person-a
+/apps/api/src/modules/catalog/      @person-a
+/apps/api/src/modules/subscriptions/ @person-a
+/apps/api/src/modules/reports/      @person-a
+/apps/api/src/modules/audit/        @person-a
+/apps/api/src/common/               @person-a
+/apps/web/src/app/(auth)/           @person-a
+/apps/web/src/app/(staff)/dashboard/ @person-a
+/apps/web/src/app/(staff)/products/  @person-a
+/apps/web/src/app/(staff)/plans/     @person-a
+/apps/web/src/app/(staff)/quotation-templates/ @person-a
+/apps/web/src/app/(staff)/subscriptions/ @person-a
+/apps/web/src/app/(staff)/staff/     @person-a
+/apps/web/src/app/(staff)/audit-log/ @person-a
+/apps/web/src/app/(portal)/my/subscriptions/ @person-a
+/prisma/schema/a_core.prisma        @person-a
+/prisma/seed/                       @person-a
+/docker-compose.yml                 @person-a
+
+# Person B — Billing, Discounts, Tax, Proration
+/apps/api/src/modules/billing/      @person-b
+/apps/api/src/modules/discounts/    @person-b
+/apps/api/src/modules/proration/    @person-b
+/apps/api/src/modules/tax/          @person-b
+/apps/api/src/modules/disputes/     @person-b
+/apps/web/src/app/(staff)/invoices/ @person-b
+/apps/web/src/app/(staff)/discounts/ @person-b
+/apps/web/src/app/(staff)/taxes/     @person-b
+/apps/web/src/app/(portal)/my/invoices/ @person-b
+/prisma/schema/b_billing.prisma     @person-b
+
+# Person C — Payments, Reconciliation, Razorpay
+/apps/api/src/modules/payments/     @person-c
+/apps/api/src/modules/rescue/       @person-c
+/apps/api/src/modules/reconcile/    @person-c
+/apps/api/src/modules/paylinks/     @person-c
+/apps/api/src/modules/mandates/     @person-c
+/apps/web/src/app/(staff)/payments/ @person-c
+/apps/web/src/app/(staff)/reconcile/ @person-c
+/apps/web/src/app/(staff)/rescue/    @person-c
+/apps/web/src/app/(portal)/my/payments/ @person-c
+/prisma/schema/c_payments.prisma    @person-c
+
+# Person D — Notifications, WhatsApp, Insights, AI
+/apps/api/src/modules/notifications/ @person-d
+/apps/api/src/modules/whatsapp/      @person-d
+/apps/api/src/modules/insights/      @person-d
+/apps/api/src/modules/ai/            @person-d
+/apps/api/src/modules/forecasts/     @person-d
+/apps/web/src/app/(staff)/mrr/       @person-d
+/apps/web/src/app/(staff)/leakage/   @person-d
+/apps/web/src/app/(staff)/assistant/ @person-d
+/apps/web/src/app/(portal)/my/savings/ @person-d
+/prisma/schema/d_insights.prisma    @person-d
