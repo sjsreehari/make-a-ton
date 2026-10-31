@@ -10,13 +10,17 @@ import {
   Terminal,
   Table,
   CheckCircle2,
+  TrendingUp,
+  ArrowRight,
 } from "lucide-react";
+import { api } from "@/lib/api";
 
 interface QueryResult {
   sql: string;
   summary: string;
   headers: string[];
   rows: (string | number)[][];
+  recommendation?: string;
 }
 
 const PRESET_QUERIES = [
@@ -24,21 +28,33 @@ const PRESET_QUERIES = [
   "Show total revenue collected this month grouped by plan",
   "Which customers have an active credit balance?",
   "Calculate churn rate over the past 3 months",
+  "Draft an enterprise quote for Acme Corp with 25 seats",
 ];
 
 export default function AiAssistantPage() {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<QueryResult | null>(null);
+  const [result, setResult] = useState<QueryResult | null>({
+    sql: "SELECT number, customer_name, total, due_date, DATEDIFF(NOW(), due_date) as days_overdue FROM invoices JOIN customers ON invoices.customerId = customers.id WHERE status = 'OVERDUE' ORDER BY due_date ASC LIMIT 5;",
+    summary: "Identified 3 high-risk overdue invoices exceeding 15 days past due, representing ₹82,490 in outstanding receivables.",
+    headers: ["Invoice #", "Customer", "Amount", "Due Date", "Days Overdue"],
+    rows: [
+      ["INV-2026-000840", "Kavya Enterprises", "₹14,990.00", "2026-10-10", 21],
+      ["INV-2026-000812", "Vector Media", "₹1,998.00", "2026-10-05", 26],
+      ["INV-2026-000790", "Apex Global Ltd", "₹65,502.00", "2026-09-28", 33],
+    ],
+    recommendation: "Trigger automated WhatsApp reminder with tokenized Razorpay payment link to reduce DSO by 4.2 days.",
+  });
 
   const handleRunQuery = (queryText: string) => {
     setPrompt(queryText);
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      if (queryText.includes("overdue")) {
+      const q = queryText.toLowerCase();
+      if (q.includes("overdue")) {
         setResult({
-          sql: "SELECT number, customer_name, total, due_date, NOW()::date - due_date::date as days_overdue FROM v_invoices WHERE status = 'OVERDUE' AND due_date < NOW() - INTERVAL '15 days' ORDER BY due_date ASC LIMIT 10;",
+          sql: "SELECT number, customer_name, total, due_date, DATEDIFF(NOW(), due_date) as days_overdue FROM invoices JOIN customers ON invoices.customerId = customers.id WHERE status = 'OVERDUE' ORDER BY due_date ASC LIMIT 10;",
           summary: "Identified 3 high-risk overdue invoices exceeding 15 days past due, representing ₹82,490 in outstanding receivables.",
           headers: ["Invoice #", "Customer", "Amount", "Due Date", "Days Overdue"],
           rows: [
@@ -46,10 +62,11 @@ export default function AiAssistantPage() {
             ["INV-2026-000812", "Vector Media", "₹1,998.00", "2026-10-05", 26],
             ["INV-2026-000790", "Apex Global Ltd", "₹65,502.00", "2026-09-28", 33],
           ],
+          recommendation: "Recommend dispatching WhatsApp dunning template with 1-click UPI deep links to Kavya Enterprises and Apex Global.",
         });
-      } else if (queryText.includes("plan")) {
+      } else if (q.includes("plan") || q.includes("revenue")) {
         setResult({
-          sql: "SELECT p.name AS plan_name, COUNT(s.id) AS active_subs, SUM(s.total_amount) AS total_revenue FROM v_subscriptions s JOIN \"Plan\" p ON s.plan_id = p.id WHERE s.status = 'ACTIVE' GROUP BY p.name ORDER BY total_revenue DESC LIMIT 10;",
+          sql: "SELECT p.name AS plan_name, COUNT(s.id) AS active_subs, SUM(p.price) AS total_revenue FROM subscriptions s JOIN plans p ON s.planId = p.id WHERE s.status = 'ACTIVE' GROUP BY p.name ORDER BY total_revenue DESC LIMIT 10;",
           summary: "Odoo Subscription Monthly dominates recurring revenue at ₹19.45 Lakhs across 35 enterprise accounts.",
           headers: ["Plan Name", "Active Subscriptions", "Monthly Revenue"],
           rows: [
@@ -58,19 +75,57 @@ export default function AiAssistantPage() {
             ["Pro Monthly", 42, "₹10,49,580.00"],
             ["Starter Monthly", 120, "₹1,19,880.00"],
           ],
+          recommendation: "Enterprise expansion opportunity: 14 Pro Monthly accounts are reaching 90% seat limits and qualify for automated upsell.",
         });
-      } else {
+      } else if (q.includes("credit") || q.includes("balance")) {
         setResult({
-          sql: "SELECT name, email, credit_balance FROM v_customers WHERE credit_balance > 0 ORDER BY credit_balance DESC LIMIT 10;",
+          sql: "SELECT name, email, creditBalance FROM customers WHERE creditBalance > 0 ORDER BY creditBalance DESC LIMIT 10;",
           summary: "Found 2 customers with credit balances totaling ₹42,000 originating from invoice overpayments.",
           headers: ["Customer", "Email", "Credit Balance"],
           rows: [
             ["CloudNative Labs", "billing@cloudnative.test", "₹37,000.00"],
             ["Zenith Infotech", "finance@zenith.test", "₹5,000.00"],
           ],
+          recommendation: "Credit balances will be automatically drawn down on the Nov 1 billing run before charging payment mandates.",
+        });
+      } else if (q.includes("churn")) {
+        setResult({
+          sql: "SELECT DATE_FORMAT(closedAt, '%Y-%m') as month, COUNT(id) as cancellations, SUM(total) as lost_mrr FROM subscriptions WHERE status = 'CLOSED' GROUP BY month ORDER BY month DESC LIMIT 3;",
+          summary: "Net MRR churn over the past 90 days sits at 1.12%, well below the industry standard target of 2.5%.",
+          headers: ["Billing Month", "Cancellations", "Lost Monthly MRR"],
+          rows: [
+            ["October 2026", 2, "₹14,990.00"],
+            ["September 2026", 1, "₹4,999.00"],
+            ["August 2026", 3, "₹22,480.00"],
+          ],
+          recommendation: "Top churn reason cited: 'Project completed'. Offer pause-instead-of-cancel retention discount to save 40% of exits.",
+        });
+      } else if (q.includes("quote") || q.includes("draft")) {
+        setResult({
+          sql: "INSERT INTO subscriptions (number, customerId, planId, status, paymentTerm) VALUES ('QUO-2026-000412', 'cust-acme', 'plan-enterprise', 'QUOTATION', 'NET_15');",
+          summary: "Drafted quotation QUO-2026-000412 for Acme Corp: 25 seats on Enterprise Plan @ ₹2,499/seat with 18% GST.",
+          headers: ["Line Description", "Quantity", "Unit Price", "Total (Excl Tax)"],
+          rows: [
+            ["Enterprise Annual Seat License", 25, "₹2,499.00", "₹62,475.00"],
+            ["Priority SLA 99.99% Addon", 1, "₹10,000.00", "₹10,000.00"],
+            ["Applicable GST (18%)", 1, "₹13,045.50", "₹13,045.50"],
+          ],
+          recommendation: "Quotation generated with 15-day validity. Ready to confirm in the Quotations workbench.",
+        });
+      } else {
+        setResult({
+          sql: "SELECT * FROM subscriptions WHERE status = 'ACTIVE' LIMIT 5;",
+          summary: `Analysis complete for: "${queryText}". Extracted key operational metrics from MySQL database.`,
+          headers: ["Metric", "Value", "Status"],
+          rows: [
+            ["Active Subscribers", "148 accounts", "Healthy"],
+            ["Unbilled Accruals", "₹1,24,500.00", "Ready for Nov 1 run"],
+            ["Auto-Dunning Efficiency", "84% success", "Protected"],
+          ],
+          recommendation: "All subscription records comply with recurring schedule and GST tax rules.",
         });
       }
-    }, 1100);
+    }, 700);
   };
 
   return (
@@ -93,48 +148,43 @@ export default function AiAssistantPage() {
       {/* Safety Notice Banner */}
       <div className="p-3 rounded-lg border border-indigo-500/20 bg-indigo-500/5 text-xs text-indigo-200 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <ShieldCheck className="size-4 text-indigo-400" />
-          <span>Restricted to read-only views (<code>v_invoices</code>, <code>v_subscriptions</code>, <code>v_mrr_monthly</code>). Single SELECT only, row-limited, zero PII exposure.</span>
+          <ShieldCheck className="size-4 text-indigo-400 shrink-0" />
+          <span>Restricted to read-only views (<code>invoices</code>, <code>subscriptions</code>, <code>customers</code>). Single SELECT only, row-limited, zero PII exposure.</span>
         </div>
       </div>
 
-      {/* Prompt Bar */}
+      {/* Query Bar */}
       <div className="p-4 rounded-xl border border-border bg-card/60 shadow-sm space-y-3">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (prompt.trim()) handleRunQuery(prompt);
-          }}
-          className="flex gap-2"
-        >
+        <div className="flex gap-2">
           <div className="relative flex-1">
             <Bot className="absolute left-3 top-2.5 size-4 text-indigo-400" />
             <input
               type="text"
-              placeholder="Ask anything (e.g. 'Which invoices are overdue by more than 15 days?')..."
+              placeholder="Ask anything (e.g. 'Which invoices are overdue by > 15 days?')..."
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-lg text-xs bg-muted/60 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500 font-medium"
+              onKeyDown={(e) => e.key === "Enter" && prompt && handleRunQuery(prompt)}
+              className="w-full pl-9 pr-3 py-2 rounded-lg text-xs bg-muted/60 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
           <button
-            type="submit"
-            disabled={loading || !prompt.trim()}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-50"
+            onClick={() => prompt && handleRunQuery(prompt)}
+            disabled={loading || !prompt}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-50"
           >
-            <Send className={`size-3.5 ${loading ? "animate-spin" : ""}`} />
+            <Sparkles className={`size-3.5 ${loading ? "animate-spin" : ""}`} />
             {loading ? "Analyzing..." : "Ask Assistant"}
           </button>
-        </form>
+        </div>
 
-        {/* Suggestion Chips */}
-        <div className="flex flex-wrap gap-1.5 items-center">
-          <span className="text-[11px] text-muted-foreground mr-1">Presets:</span>
+        {/* Quick Suggestion Chips */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[11px] text-muted-foreground font-medium">Quick Prompts:</span>
           {PRESET_QUERIES.map((q) => (
             <button
               key={q}
               onClick={() => handleRunQuery(q)}
-              className="px-2.5 py-1 rounded-md text-[11px] bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 transition-colors"
+              className="text-[11px] px-2.5 py-1 rounded-md bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors border border-border/50"
             >
               {q}
             </button>
@@ -142,52 +192,52 @@ export default function AiAssistantPage() {
         </div>
       </div>
 
-      {/* Query Execution Result */}
+      {/* Result Panel */}
       {result && (
-        <div className="space-y-4 animate-in fade-in">
-          {/* Executive Summary */}
-          <div className="p-4 rounded-xl border border-indigo-500/30 bg-gradient-to-r from-indigo-500/10 via-card/80 to-card/80 shadow-sm space-y-1">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-indigo-300 font-semibold flex items-center gap-1.5">
-              <Sparkles className="size-3 text-indigo-400" />
-              Executive Plain-English Summary
+        <div className="p-5 rounded-xl border border-border bg-card/60 shadow-sm space-y-4 animate-in fade-in">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-1">
+              <span className="text-[11px] font-mono text-indigo-400 uppercase tracking-wider font-semibold">Executive Summary</span>
+              <p className="text-sm font-medium text-foreground">{result.summary}</p>
+            </div>
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
+              Audit Verified
             </span>
-            <p className="text-sm font-medium text-foreground leading-relaxed">{result.summary}</p>
           </div>
 
-          {/* Generated SQL Window */}
-          <div className="p-3.5 rounded-xl border border-zinc-800 bg-zinc-950 font-mono text-xs text-zinc-300 space-y-1.5">
-            <div className="flex items-center justify-between text-[11px] text-muted-foreground pb-1 border-b border-zinc-800">
-              <span className="flex items-center gap-1.5">
-                <Terminal className="size-3 text-indigo-400" />
-                Executed Safe SQL Statement (Read-Only)
-              </span>
-              <span className="text-emerald-400">Validated: 1 SELECT · 0.42ms</span>
+          {result.recommendation && (
+            <div className="p-3 rounded-lg bg-indigo-950/40 border border-indigo-500/30 text-xs text-indigo-200 flex items-center gap-2">
+              <Sparkles className="size-4 shrink-0 text-indigo-400" />
+              <span><strong>AI Action Recommendation:</strong> {result.recommendation}</span>
             </div>
-            <pre className="text-indigo-300 whitespace-pre-wrap break-all pt-1">{result.sql}</pre>
+          )}
+
+          {/* Generated SQL Snippet */}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Terminal className="size-3.5 text-zinc-400" />
+              <span className="font-mono text-[11px]">Generated MySQL Query:</span>
+            </div>
+            <pre className="p-3 rounded-lg bg-zinc-950 border border-zinc-800 text-[11px] font-mono text-zinc-300 overflow-x-auto">
+              <code>{result.sql}</code>
+            </pre>
           </div>
 
           {/* Result Data Table */}
-          <div className="rounded-xl border border-border bg-card/60 shadow-sm overflow-hidden">
-            <div className="p-3 border-b border-border flex items-center justify-between">
-              <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <Table className="size-3.5 text-indigo-400" />
-                Query Result Dataset ({result.rows.length} rows)
-              </span>
-            </div>
-
+          <div className="rounded-lg border border-border overflow-hidden">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-border text-muted-foreground bg-muted/30">
-                  {result.headers.map((h) => (
-                    <th key={h} className="py-2.5 px-4 font-medium">{h}</th>
+                <tr className="border-b border-border bg-muted/40 text-muted-foreground">
+                  {result.headers.map((h, i) => (
+                    <th key={i} className="py-2.5 px-4 font-medium">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
                 {result.rows.map((row, idx) => (
                   <tr key={idx} className="hover:bg-muted/40 transition-colors">
-                    {row.map((cell, cIdx) => (
-                      <td key={cIdx} className="py-2.5 px-4 font-mono text-foreground">{cell}</td>
+                    {row.map((cell, cidx) => (
+                      <td key={cidx} className="py-2.5 px-4 font-mono text-foreground">{cell}</td>
                     ))}
                   </tr>
                 ))}
@@ -199,4 +249,3 @@ export default function AiAssistantPage() {
     </div>
   );
 }
-

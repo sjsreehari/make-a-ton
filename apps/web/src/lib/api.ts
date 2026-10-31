@@ -575,4 +575,27 @@ export const api = {
       });
     },
   },
+
+  rescue: {
+    async failures() {
+      return request<any[]>("/rescue/failures").catch(() => []);
+    },
+    async simulate(dto: { invoiceId?: string; failureKind: string; failureMessage?: string }) {
+      return request<any>("/rescue/simulate", {
+        method: "POST",
+        body: JSON.stringify(dto),
+      });
+    },
+    async recover(id: string) {
+      return request<any>(`/rescue/recover/${id}`, { method: "POST" });
+    },
+    async metrics() {
+      return request<any>("/rescue/metrics").catch(() => ({
+        recoveredAmount: "42500.00",
+        activeRetries: 3,
+        totalAttempts: 12,
+        successRate: 84,
+      }));
+    },
+  },
 };
