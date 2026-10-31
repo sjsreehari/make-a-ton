@@ -56,3 +56,4 @@ export class NotificationsController {
     return this.templates.upsertTemplate(dto as any);
   }
 }
+

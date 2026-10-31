@@ -96,3 +96,4 @@ describe('NotificationService', () => {
     expect(mockEmailGateway.sendEmail).not.toHaveBeenCalled();
   });
 });
+

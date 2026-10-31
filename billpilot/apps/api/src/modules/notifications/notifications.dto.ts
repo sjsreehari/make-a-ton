@@ -24,3 +24,4 @@ export const templateSchema = z.object({
   isActive: z.boolean().optional().default(true),
 });
 export type TemplateDto = z.infer<typeof templateSchema>;
+

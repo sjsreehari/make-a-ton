@@ -116,3 +116,4 @@ The gateway adapter is designed to connect to your custom Linux WhatsApp daemon 
    }
    ```
    *(If your custom server uses different parameter names or authentication, you can pass them via standard HTTP headers).*
+

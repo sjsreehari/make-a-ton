@@ -13,7 +13,7 @@ export class DunningService {
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationService,
     private readonly audit: CommonAuditService,
-  ) {}
+  ) { }
 
   /**
    * 12.3 Scheduled daily dunning sweep @ 09:00 UTC

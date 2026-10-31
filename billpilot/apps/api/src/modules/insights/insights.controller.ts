@@ -104,3 +104,4 @@ export class InsightsController {
     return this.jobsService.triggerJob(id);
   }
 }
+

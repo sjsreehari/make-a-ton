@@ -23,7 +23,7 @@ export class WhatsAppBotService {
     private readonly phoneService: PhoneService,
     private readonly waGateway: WhatsAppGatewayService,
     private readonly audit: CommonAuditService,
-  ) {}
+  ) { }
 
   /**
    * Register AI intent classifier hook from AI module

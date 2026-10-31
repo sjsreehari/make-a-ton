@@ -41,3 +41,4 @@ describe('MrrService', () => {
     expect(metrics.arr).toBeCloseTo(2433.33 * 12, 1);
   });
 });
+

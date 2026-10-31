@@ -164,3 +164,4 @@ export class WhatsAppGatewayService {
     return { connected: true, provider: 'mock_local' };
   }
 }
+

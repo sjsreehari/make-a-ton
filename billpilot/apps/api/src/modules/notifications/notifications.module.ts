@@ -18,3 +18,4 @@ import { WhatsappModule } from '../whatsapp/whatsapp.module';
   exports: [NotificationService, TemplatesService, EmailGatewayService],
 })
 export class NotificationsModule {}
+

@@ -94,3 +94,4 @@ export class WhatsAppController {
     return this.phoneService.setOptIn(user.sub, body.enabled);
   }
 }
+

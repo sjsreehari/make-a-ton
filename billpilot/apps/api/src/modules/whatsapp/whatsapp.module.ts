@@ -10,3 +10,4 @@ import { WhatsAppController } from './whatsapp.controller';
   exports: [WhatsAppGatewayService, PhoneService, WhatsAppBotService],
 })
 export class WhatsappModule {}
+

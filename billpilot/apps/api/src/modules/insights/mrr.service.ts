@@ -18,7 +18,7 @@ export interface MrrBreakdown {
 export class MrrService {
   private readonly logger = new Logger(MrrService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   /**
    * 12.2 Calculate live MRR / ARR metrics from active subscriptions
