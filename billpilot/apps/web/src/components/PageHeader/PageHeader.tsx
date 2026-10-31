@@ -1,23 +1,25 @@
-import { cn } from '@/lib/cn';
-import React from 'react';
+import { cn } from "@/lib/cn";
+import React from "react";
 
-export interface PageHeaderProps extends React.PropsWithChildren {
-  title: string;
-  description?: string;
-  actions?: React.ReactNode;
-  className?: string;
+export interface PageHeaderProps {
+  left?: React.ReactNode;
+  leftColumnClassName?: string;
+  right?: React.ReactNode;
 }
 
-export function PageHeader({ title, description, actions, className }: PageHeaderProps) {
+/**
+ * Page header with a left content slot (title / breadcrumbs) and a
+ * right action slot. Matches the WW dashboard header chrome but
+ * without the global SearchBar — the router doesn't have search.
+ */
+export function PageHeader({ left, leftColumnClassName, right }: PageHeaderProps) {
   return (
-    <div className={cn('flex w-full items-center justify-between gap-4', className)}>
-      <div className="min-w-0">
-        <h1 className="truncate text-base font-semibold text-foreground">{title}</h1>
-        {description && (
-          <p className="text-2xs text-muted-foreground">{description}</p>
-        )}
+    <div className="flex w-full min-w-0 items-center gap-6">
+      <div className={cn("min-w-0 flex-[0_1_auto] overflow-hidden pr-1", leftColumnClassName)}>
+        {left}
       </div>
-      {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+      <div className="min-w-0 flex-1 basis-0" />
+      {right != null && <div className="shrink-0">{right}</div>}
     </div>
   );
 }

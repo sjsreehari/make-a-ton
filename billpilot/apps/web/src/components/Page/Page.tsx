@@ -1,5 +1,5 @@
-import { cn } from '@/lib/cn';
-import React from 'react';
+import { cn } from "@/lib/cn";
+import React from "react";
 
 export interface PageProps extends React.PropsWithChildren {
   className?: string;
@@ -7,6 +7,11 @@ export interface PageProps extends React.PropsWithChildren {
   subheader?: React.ReactNode;
 }
 
+/**
+ * Renders a page (excluding the sidebar) with a header strip and an
+ * optional sub-header row. Body is scrollable and constrained to a max
+ * content width so dashboards don't sprawl on ultra-wide displays.
+ */
 export function Page({ children, className, header, subheader }: PageProps) {
   return (
     <div className="grid h-full w-full grid-cols-[minmax(0,_1fr)] grid-rows-[auto_minmax(0,1fr)]">
@@ -22,7 +27,7 @@ export function Page({ children, className, header, subheader }: PageProps) {
       </div>
       <div
         className={cn(
-          'relative flex h-full w-full flex-col items-center overflow-auto @container [scrollbar-gutter:stable]',
+          "relative flex h-full w-full flex-col items-center overflow-auto @container [scrollbar-gutter:stable]",
           className,
         )}
       >
@@ -35,23 +40,25 @@ export function Page({ children, className, header, subheader }: PageProps) {
 Page.Section = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & { header?: React.ReactNode }
->(({ children, className, header, ...props }, ref) => (
-  <section
-    className={cn('flex w-full max-w-content-width flex-col gap-4 p-6', className)}
-    ref={ref}
-    {...props}
-  >
-    {header}
-    {children}
-  </section>
-));
-(Page.Section as React.ForwardRefExoticComponent<unknown>).displayName = 'Page.Section';
+>(
+  ({ children, className, header, ...props }, ref) => (
+    <section
+      className={cn("flex w-full max-w-content-width flex-col gap-4 p-6", className)}
+      ref={ref}
+      {...props}
+    >
+      {header}
+      {children}
+    </section>
+  ),
+);
+(Page.Section as React.ForwardRefExoticComponent<unknown>).displayName = "Page.Section";
 
 Page.SectionHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   function PageSectionHeader({ children, className, ...props }, ref) {
     return (
       <div
-        className={cn('group relative flex flex-row items-center gap-2', className)}
+        className={cn("group relative flex flex-row items-center gap-2", className)}
         ref={ref}
         {...props}
       >
@@ -60,4 +67,4 @@ Page.SectionHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLD
     );
   },
 );
-(Page.SectionHeader as React.ForwardRefExoticComponent<unknown>).displayName = 'Page.SectionHeader';
+(Page.SectionHeader as React.ForwardRefExoticComponent<unknown>).displayName = "Page.SectionHeader";

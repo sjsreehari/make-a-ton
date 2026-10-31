@@ -10,10 +10,7 @@
     "experimentalDecorators": true,
     "strict": true,
     "strictPropertyInitialization": false,
-    "skipLibCheck": true,
-    "paths": {
-      "@billpilot/shared": ["../../packages/shared/src/index.ts"]
-    }
+    "skipLibCheck": true
   },
   "include": ["src/**/*", "test/**/*"],
   "exclude": ["node_modules", "dist"]

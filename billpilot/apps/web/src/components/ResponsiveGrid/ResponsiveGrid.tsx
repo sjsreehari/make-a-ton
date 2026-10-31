@@ -1,25 +1,22 @@
-import { cn } from '@/lib/cn';
-import React from 'react';
+import { cn } from "@/lib/cn";
+import React from "react";
 
-export interface ResponsiveGridProps extends React.HTMLAttributes<HTMLDivElement> {
-  cols?: 1 | 2 | 3 | 4;
-}
+export interface ResponsiveGridProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export function ResponsiveGrid({ cols = 4, className, children, ...props }: ResponsiveGridProps) {
+/**
+ * Six-column responsive grid using container queries (@xl, @4xl). Pair
+ * with `ResponsiveGrid.Full / .Large / .Medium / .Small` on children to
+ * size them across breakpoints.
+ */
+export function ResponsiveGrid({ children, className, ...props }: ResponsiveGridProps) {
   return (
-    <div
-      className={cn(
-        'grid gap-4',
-        {
-          'grid-cols-1 sm:grid-cols-2': cols === 2,
-          'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3': cols === 3,
-          'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4': cols === 4,
-        },
-        className,
-      )}
-      {...props}
-    >
+    <div className={cn("grid grid-cols-6 gap-4 @container", className)} {...props}>
       {children}
     </div>
   );
 }
+
+ResponsiveGrid.Small = cn("col-span-6 @xl:col-span-3 @4xl:col-span-2");
+ResponsiveGrid.Medium = cn("col-span-6 @xl:col-span-3");
+ResponsiveGrid.Large = cn("col-span-6 @xl:col-span-3 @4xl:col-span-4");
+ResponsiveGrid.Full = cn("col-span-6");

@@ -1,1 +1,1 @@
-export { ChartCard, type ChartCardProps } from './ChartCard';
+export * from "./ChartCard";

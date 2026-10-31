@@ -1,1 +1,1 @@
-export { Kbd, type KbdProps } from './Kbd';
+export * from "./Kbd";

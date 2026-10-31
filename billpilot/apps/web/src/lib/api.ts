@@ -1,79 +1,328 @@
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+const BASE = "/admin/v1";
 
-function getToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('accessToken');
-}
-
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = getToken();
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...((init?.headers as Record<string, string>) ?? {}),
+  };
   const res = await fetch(`${BASE}${path}`, {
     ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...init?.headers,
-    },
+    credentials: "include",
+    headers,
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error((err as { error?: { message?: string } })?.error?.message ?? `HTTP ${res.status}`);
+  if (res.status === 401 && typeof window !== "undefined") {
+    // Session expired or never authenticated — bounce to login. The
+    // (app) layout's auth gate handles the same case on initial load,
+    // but in-flight calls (chart refreshes, mutations) need their own
+    // bounce so users don't sit on a broken page.
+    if (!window.location.pathname.startsWith("/ui/login")) {
+      // Strip the /ui basePath so Next's router.replace() doesn't re-prepend
+      // it after login (which would yield /ui/ui/...). Anything outside the
+      // basePath isn't an app path; default to /dashboard.
+      const path = window.location.pathname;
+      const internal = path.startsWith("/ui/") ? path.slice(3) : "/dashboard";
+      const next = encodeURIComponent(internal);
+      window.location.href = `/ui/login?next=${next}`;
+      throw new Error("401: redirecting to login");
+    }
   }
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`${res.status}: ${body}`);
+  }
+  if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
+}
+
+export interface MetricsSummary {
+  request_count: number;
+  total_tokens: number;
+  total_requested_cost_usd: number;
+  total_actual_cost_usd: number;
+  total_savings_usd: number;
+}
+
+export interface TimeseriesBucket {
+  bucket: string;
+  requested_cost_usd: number;
+  actual_cost_usd: number;
+}
+
+export interface MetricsTimeseries {
+  buckets: TimeseriesBucket[];
+}
+
+export interface ModelBreakdownBucket {
+  bucket: string;
+  decision_model: string;
+  request_count: number;
+  total_tokens: number;
+  actual_cost_usd: number;
+}
+
+export interface MetricsModelBreakdown {
+  buckets: ModelBreakdownBucket[];
+}
+
+export interface MetricsDetailRow {
+  timestamp: string;
+  request_id: string;
+  requested_model: string;
+  decision_model: string;
+  decision_provider: string;
+  decision_reason: string;
+  sticky_hit: boolean;
+  input_tokens: number;
+  output_tokens: number;
+  cache_creation_tokens: number | null;
+  cache_read_tokens: number | null;
+  requested_cost_usd: number;
+  actual_cost_usd: number;
+  total_latency_ms: number;
+  upstream_status_code: number;
+  router_user_id: string;
+  client_app: string;
+  turn_type: string;
+  user_email: string;
+}
+
+export interface MetricsDetails {
+  rows: MetricsDetailRow[];
+}
+
+// "routing" keys (rk_) proxy inference; "analytics_read" keys (ra_) are
+// read-only export credentials that cannot route or spend.
+export type APIKeyScope = "routing" | "analytics_read";
+
+export interface APIKey {
+  id: string;
+  name: string | null;
+  key_prefix: string;
+  key_suffix: string;
+  scope: APIKeyScope;
+  last_used_at: string | null;
+  created_at: string;
+}
+
+export interface IssueAPIKeyResponse {
+  key: APIKey;
+  token: string;
+}
+
+// ProviderAuthType is how a BYOK key authenticates upstream. "wif" keys hold no
+// secret at all: the router presents its own workload attestation per request.
+// "azure_entra" stores an Entra client secret and mints a short-lived token.
+// "anthropic_wif" exchanges workload assertions using per-key federation settings.
+export type ProviderAuthType = "bearer" | "keypair_jwt" | "wif" | "azure_entra" | "anthropic_wif";
+
+export interface AnthropicFederationConfig {
+  federation_rule_id: string;
+  organization_id: string;
+  service_account_id: string;
+  workspace_id?: string;
+  audience?: string;
+}
+
+export interface ExternalKey {
+  id: string;
+  provider: string;
+  name: string | null;
+  key_prefix: string;
+  key_suffix: string;
+  // Endpoint this key is scoped to; absent when the provider's default is used.
+  base_url?: string;
+  // Catalog model ID -> the ID this endpoint publishes it under; absent when it
+  // uses catalog names directly.
+  model_aliases?: Record<string, string>;
+  // "bearer" (send the stored secret), "keypair_jwt" (the secret is an RSA
+  // private key the router signs short-lived tokens with), "wif" (no stored
+  // secret; the router attests its own workload identity), or "azure_entra"
+  // (the secret is an Entra client secret used to mint a short-lived token);
+  // absent means bearer.
+  auth_type?: ProviderAuthType;
+  federation_config?: AnthropicFederationConfig;
+  // Principal a minted token is issued for; present only with keypair_jwt or
+  // azure_entra. For azure_entra these are the tenant ID and client ID.
+  auth_account?: string;
+  auth_user?: string;
+  last_used_at: string | null;
+  created_at: string;
+}
+
+export interface RouterConfig {
+  cluster_version: string;
+  embed_only_user_message: boolean;
+  sticky_decision_ttl_ms: string;
+  otel_enabled: boolean;
+  dev_mode: boolean;
+  semantic_cache_enabled: boolean;
+  env_provider_keys: string[];
+}
+
+// Whether this installation has ever served a routed request. Set once and
+// never cleared, so it survives key rotation — the dashboard gates first-run
+// onboarding on this rather than on a key's last_used_at.
+export interface OnboardingStatus {
+  first_request_served_at: string | null;
+}
+
+export interface MeResponse {
+  authenticated: boolean;
+  subject?: string;
+}
+
+export interface DeployedModel {
+  model: string;
+  provider: string;
+}
+
+export interface ExcludedModelsResponse {
+  available: DeployedModel[];
+  excluded: string[];
+  env_override_active: boolean;
+}
+
+export interface ExcludedProvidersResponse {
+  available: string[];
+  excluded: string[];
+  env_override_active: boolean;
+}
+
+export interface RoutingPreferencesResponse {
+  quality: number;
+  price: number;
+  is_default: boolean;
 }
 
 export const api = {
   auth: {
-    login: (email: string, password: string) =>
-      apiFetch<{ accessToken: string; user: { id: string; name: string; email: string; role: string } }>(
-        '/auth/login',
-        { method: 'POST', body: JSON.stringify({ email, password }) },
-      ),
-    signup: (data: object) =>
-      apiFetch<{ accessToken: string; user: object }>(
-        '/auth/signup',
-        { method: 'POST', body: JSON.stringify(data) },
-      ),
-    me: () => apiFetch<{ id: string; name: string; email: string; role: string }>('/auth/me'),
-    logout: () => apiFetch<void>('/auth/logout', { method: 'POST' }),
-    forgotPassword: (email: string) =>
-      apiFetch<void>('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
-    resetPassword: (token: string, password: string) =>
-      apiFetch<void>('/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, password }) }),
+    me: () => request<MeResponse>("/auth/me"),
+    login: (password: string) =>
+      request<{ ok: boolean; expires_at: string }>("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ password }),
+      }),
+    logout: () => request<{ ok: boolean }>("/auth/logout", { method: "POST" }),
   },
-  plans: {
-    list: (p = 1, l = 20) => apiFetch<unknown>(`/plans?page=${p}&limit=${l}`),
+  metrics: {
+    summary: (from?: string, to?: string) => {
+      const params = new URLSearchParams();
+      if (from) params.set("from", from);
+      if (to) params.set("to", to);
+      const qs = params.toString();
+      return request<MetricsSummary>(`/metrics/summary${qs ? `?${qs}` : ""}`);
+    },
+    timeseries: (granularity: "hour" | "day" | "week", from?: string, to?: string) => {
+      const params = new URLSearchParams({ granularity });
+      if (from) params.set("from", from);
+      if (to) params.set("to", to);
+      return request<MetricsTimeseries>(`/metrics/timeseries?${params.toString()}`);
+    },
+    details: (from: string, to: string, limit: number = 100) => {
+      const params = new URLSearchParams({ from, to, limit: String(limit) });
+      return request<MetricsDetails>(`/metrics/details?${params.toString()}`);
+    },
+    modelBreakdown: (granularity: "hour" | "day" | "week", from?: string, to?: string) => {
+      const params = new URLSearchParams({ granularity });
+      if (from) params.set("from", from);
+      if (to) params.set("to", to);
+      return request<MetricsModelBreakdown>(`/metrics/model-breakdown?${params.toString()}`);
+    },
   },
-  subscriptions: {
-    list: (params?: string) => apiFetch<unknown>(`/subscriptions?${params ?? ''}`),
-    get: (id: string) => apiFetch<unknown>(`/subscriptions/${id}`),
+  keys: {
+    list: () => request<{ keys: APIKey[] }>("/keys"),
+    issue: (name?: string, scope: APIKeyScope = "routing") =>
+      request<IssueAPIKeyResponse>("/keys", {
+        method: "POST",
+        body: JSON.stringify({ name: name ?? "", scope }),
+      }),
+    // Soft-deletes the named key and issues a replacement in one round-trip.
+    // The previous token stops working immediately. Carries forward the
+    // previous key's name server-side.
+    rotate: (id: string) => request<IssueAPIKeyResponse>(`/keys/${id}/rotate`, { method: "POST" }),
+    delete: (id: string) => request<void>(`/keys/${id}`, { method: "DELETE" }),
   },
-  invoices: {
-    list: (params?: string) => apiFetch<unknown>(`/invoices?${params ?? ''}`),
-    get: (id: string) => apiFetch<unknown>(`/invoices/${id}`),
+  providerKeys: {
+    list: () => request<{ keys: ExternalKey[] }>("/provider-keys"),
+    upsert: (
+      provider: string,
+      key: string,
+      name?: string,
+      baseURL?: string,
+      modelAliases?: Record<string, string>,
+      auth?: {
+        type: ProviderAuthType;
+        account?: string;
+        user?: string;
+        federationConfig?: AnthropicFederationConfig;
+      },
+    ) =>
+      request<ExternalKey>("/provider-keys", {
+        method: "POST",
+        body: JSON.stringify({
+          provider,
+          key,
+          name,
+          base_url: baseURL,
+          model_aliases: modelAliases,
+          auth_type: auth?.type ?? "bearer",
+          federation_config: auth?.federationConfig,
+          auth_account: auth?.account,
+          auth_user: auth?.user,
+        }),
+      }),
+    // Replaces the alias map in place; the stored secret is untouched, so
+    // retargeting model names doesn't need the credential re-entered.
+    updateModelAliases: (id: string, modelAliases: Record<string, string>) =>
+      request<ExternalKey>(`/provider-keys/${id}/model-aliases`, {
+        method: "PUT",
+        body: JSON.stringify({ model_aliases: modelAliases }),
+      }),
+    delete: (id: string) => request<void>(`/provider-keys/${id}`, { method: "DELETE" }),
+    // Lists the model IDs a saved key's endpoint publishes.
+    listUpstreamModels: (id: string) =>
+      request<{ models: string[] }>(`/provider-keys/${id}/models`),
+    // Lists an endpoint's models before the key is saved; the credential is
+    // used for the one upstream call and never persisted.
+    discoverModels: (provider: string, key: string, baseURL?: string) =>
+      request<{ models: string[] }>("/provider-keys/discover-models", {
+        method: "POST",
+        body: JSON.stringify({ provider, key, base_url: baseURL }),
+      }),
   },
-  payments: {
-    list: (params?: string) => apiFetch<unknown>(`/payments?${params ?? ''}`),
+  config: {
+    get: () => request<RouterConfig>("/config"),
   },
-  products: {
-    list: (params?: string) => apiFetch<unknown>(`/catalog/products?${params ?? ''}`),
+  onboarding: {
+    get: () => request<OnboardingStatus>("/onboarding"),
   },
-  discounts: {
-    list: () => apiFetch<unknown>('/discounts'),
+  excludedModels: {
+    get: () => request<ExcludedModelsResponse>("/excluded-models"),
+    update: (excluded: string[]) =>
+      request<ExcludedModelsResponse>("/excluded-models", {
+        method: "PUT",
+        body: JSON.stringify({ excluded }),
+      }),
   },
-  taxes: {
-    list: () => apiFetch<unknown>('/tax'),
+  excludedProviders: {
+    get: () => request<ExcludedProvidersResponse>("/excluded-providers"),
+    update: (excluded: string[]) =>
+      request<ExcludedProvidersResponse>("/excluded-providers", {
+        method: "PUT",
+        body: JSON.stringify({ excluded }),
+      }),
   },
-  staff: {
-    list: () => apiFetch<unknown>('/users?role=STAFF'),
-  },
-  auditLog: {
-    list: (params?: string) => apiFetch<unknown>(`/audit?${params ?? ''}`),
-  },
-  dashboard: {
-    summary: () => apiFetch<unknown>('/reports/summary'),
-  },
-  health: {
-    check: () => apiFetch<unknown>('/health'),
+  routingPreferences: {
+    get: () => request<RoutingPreferencesResponse>("/routing-preferences"),
+    update: (body: { quality: number; price: number }) =>
+      request<RoutingPreferencesResponse>("/routing-preferences", {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }),
+    reset: () =>
+      request<RoutingPreferencesResponse>("/routing-preferences", {
+        method: "PUT",
+        body: JSON.stringify({ reset: true }),
+      }),
   },
 };

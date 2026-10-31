@@ -66,7 +66,7 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
-        display: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
+        display: ["var(--font-inter-display)", "var(--font-inter)", "Inter", "system-ui", "sans-serif"],
       },
       fontSize: {
         "2xs": ["0.75rem", "0.875rem"],
