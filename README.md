@@ -1,290 +1,257 @@
-# SmartBill
-**"We removed every manual step in the billing month."**
+# BillPilot — Subscription Management System
 
-BillPilot is a Subscription Management System for the fictional company **Brightloop Software**. It covers the full recurring-revenue lifecycle in one platform:
-
-```
-sign-up -> products/plans -> quotes -> subscriptions -> invoices -> payments -> reporting
-```
-
-Built for a 7-hour hackathon by four teammates working in parallel on four branches.
-
----
-
-## Table of Contents
-
-1. [Features](#features)
-2. [Tech Stack](#tech-stack)
-3. [Repository Layout](#repository-layout)
-4. [Quick Start](#quick-start)
-5. [Environment Variables](#environment-variables)
-6. [Seeded Accounts](#seeded-accounts)
-7. [Scripts](#scripts)
-8. [API Overview](#api-overview)
-9. [Roles and Access](#roles-and-access)
-10. [Team, Branches and Ownership](#team-branches-and-ownership)
-11. [Integrations Setup](#integrations-setup)
-12. [Testing](#testing)
-13. [Performance](#performance)
-14. [Docs Index](#docs-index)
-15. [Troubleshooting](#troubleshooting)
-
----
-
-## Features
-
-### Core (mandatory)
-- **Auth and RBAC**: sign-up with strong password rules (length >= 9, upper, lower, special), forgot-password via email link (30 min, single use), roles ADMIN / STAFF / CUSTOMER.
-- **Catalog**: products, variants (e.g. brand = Odoo adds 560), plans with billing period, min quantity, availability window, and switches (autoClose, closable, pausable, renewable).
-- **Quotation templates and subscriptions**: numbered `SUB-2026-000001`, state machine `DRAFT -> QUOTATION -> CONFIRMED -> ACTIVE -> CLOSED` (pause is a flag on ACTIVE).
-- **Invoicing**: auto-generation, bulk billing run (BullMQ + manual button), automatic tax, confirm / cancel / send / print PDF. **Idempotent**: no duplicate or skipped billing.
-- **Discounts** (admin only): fixed or percentage, minimums, date windows, concurrency-safe usage limits.
-- **Payments**: record method/amount/date/note, partial payments, overpayment becomes customer credit, overdue flags.
-- **Reporting dashboard**: active subscriptions, revenue collected, amount owed, overdue; filters; Redis-cached; fast with 5,000+ subscriptions.
-
-### Win features
-| Tier | Features |
-|------|----------|
-| 1 (must ship) | WhatsApp invoices/reminders/receipts, Razorpay payment link + signed webhook auto-marking Paid, MRR/ARR dashboard, audit log, 5,000+ seeded subscriptions with load-time badge |
-| 2 (wow) | AI Finance Assistant (read-only text-to-SQL), Natural Language to Quotation, Revenue Leakage Detector, Payment Rescue Engine, bank reconciliation with fuzzy matching, "Why is my bill X?" explainer, proration preview |
-| 3 (polish) | Dunning + auto-pause, churn-risk score, cash-flow forecast, Customer Savings Advisor, margin-aware discounts, billing dry run, GST-ready invoice, multi-currency, template editor, CSV/PDF exports, dark mode |
-
-If time slips, Tier 3 is cut first, then Tier 2. Never Tier 1 or the core requirements.
-
----
-## Repository Layout
-
-```
-billpilot/
-  apps/
-    api/            NestJS API (port 4000)
-    web/            Next.js app (port 3000)
-  packages/
-    shared/         zod schemas, enums, events, contracts, error codes
-    config/         shared eslint / ts presets
-  prisma/
-    schema/         base + a_core + b_billing + c_payments + d_insights
-    migrations/
-    seed/           orchestrator, factories, data
-  docker/postgres/  init.sql (read-only role for the AI assistant)
-  docs/             architecture, decisions, conventions, events, demo, risks, tasks
-  docker-compose.yml
-  PROJECT.txt
-  CODEOWNERS
-```
+> **"We removed every manual step in the billing month."**
+> Built by **Brightloop Software** · Hackathon project
 
 ---
 
 ## Quick Start
 
-**Prerequisites:** Node 20 (`nvm use`), pnpm, Docker.
-
 ```bash
-# 1. Clone
-git clone <repo-url> billpilot && cd billpilot
-
-# 2. Environment
+# 1. Clone and set up environment
+git clone <repo> billpilot && cd billpilot
 cp .env.example .env
-#    Fill in JWT_ACCESS_SECRET and JWT_REFRESH_SECRET at minimum.
-#    Twilio / Razorpay / Anthropic keys are optional until you work on those features.
+# Edit .env with your secrets (JWT secrets at minimum)
 
-# 3. Infrastructure (Postgres, Redis, Mailhog)
+# 2. Start local infrastructure (PostgreSQL + Redis)
+#    Option A — Docker (recommended if Docker Desktop is installed):
 docker compose up -d
 
-# 4. Install dependencies
-pnpm i
+#    Option B — Homebrew (if Docker is unavailable on macOS):
+brew install postgresql@16 redis
+brew services start postgresql@16
+brew services start redis
+# Then create the database:
+psql -U $(whoami) -d postgres -c "CREATE ROLE billpilot WITH LOGIN PASSWORD 'billpilot' SUPERUSER CREATEDB;"
+psql -U $(whoami) -d postgres -c "CREATE DATABASE billpilot OWNER billpilot;"
 
-# 5. Database
+# 3. Install dependencies
+pnpm install
+
+# 4. Database setup — run migrations then seed
 pnpm db:migrate
 pnpm db:seed
 
-# 6. Run everything
+# For 5 000+ subscriptions and ~60 000 invoices (performance demo):
+pnpm db:seed -- --scale=5000
+
+# 5. Start dev servers  (API → :4000 · Web → :3000)
 pnpm dev
 ```
 
-Then open:
+---
 
-| Service | URL |
-|---------|-----|
-| Web app | http://localhost:3000 |
-| API | http://localhost:4000/api/v1 |
-| Swagger docs | http://localhost:4000/api/docs |
-| Health check | http://localhost:4000/api/v1/health |
-| Mailhog (emails) | http://localhost:8025 |
+## Services & Web Pages
 
-### Large dataset (performance demo)
+| Route | Page | Purpose & Design |
+|---|---|---|
+| **`/`** | **Main Landing Page** | Warm cream editorial aesthetic (`#fbfbfa` & `#dc4a22`), mascot on stool, 2M+ stat pill, infinity loop, dashboard window, unit economics table, terminal + bill explainer stepper, mascot row, interactive leakage scanner try-it box, CFO testimonial, ARR hockey-stick curve, dark `#0e0e0d` footer. |
+| **`/pricing`** | **Pricing & Tiers** | BillPilot Platform vs Rescue Engine switcher, Monthly vs Yearly (-16.7%), 3 pricing cards: Starter (₹0), Pro (₹2,499/seat), Enterprise (Custom). |
+| **`/enterprise`** | **Enterprise & Security** | Terracotta wireframe graphic, SOC 2/GDPR/HIPAA compliance pill row, hub-and-spoke architecture, 2M+ stats, on-premise & granular RBAC. |
+| **`/customers`** | **Customer Stories** | 2M+/25K+/SOC 2 pill, 12-logo grid, 19% cycle time quote card, 6 customer case study cards (Apex Global, Zenith Infotech, etc.). |
+| **`/roi`** | **Revenue ROI & Economics** | 3.2x / +31% / -38% stats, financial integrity safeguards (composite locks, atomic discounts, read-only AI views), 62% Razorpay vs 38% Bank CSV split, churn breakdown. |
+| **`/portal`** | **Customer Portal** | Self-service billing, active subscriptions, invoice downloads, Razorpay payments, live proration simulation for seat changes. |
+| **`/dashboard`** | **Operations Hub** | Executive MRR/ARR, leakage alerts, billing run trigger, quick actions, collection charts. |
+| **`/subscriptions`** | **Subscriptions** | Lifecycle state transitions (Draft → Quotation → Confirmed → Active → Closed), pause/resume/early-close/renew. |
+| **`/invoices`** | **Invoices & Billing** | GST-compliant invoices, status pills, PDF receipts, WhatsApp dispatch triggers. |
+| **`/billing-run`** | **Bulk Billing Run** | Idempotent billing execution, pre-run anomaly checks, live execution audit log. |
+| **`/payments`** | **Reconciliation** | Razorpay webhooks, Bank CSV fuzzy statement matching, credit balance allocations. |
+| **`/catalog`** | **Products & Plans** | Odoo variants (+₹560), margin analysis, plan-product bundles. |
+| **`/quotes`** | **Quotation Templates** | One-click draft quotes, natural-language AI quotation drafter. |
+| **`/discounts-taxes`** | **Taxes & Discounts** | 18% GST splits (CGST + SGST vs IGST), concurrency-safe discount vouchers. |
+| **`/leakage`** | **Revenue Leakage** | Automated scanner for uninvoiced contracts, orphaned discounts, 1-click remediation. |
+| **`/payment-rescue`** | **Payment Rescue** | Dunning retry scheduler, card failure categorization, recovered MRR tracking. |
+| **`/ai-assistant`** | **AI Finance Assistant** | Natural-language queries, read-only Postgres views, SQL validator. |
+| **`/communications`** | **WhatsApp Bot** | Twilio Sandbox bot logs, two-way commands, receipt dispatching. |
+| **`/audit`** | **Audit Trail** | Immutable record of who changed what, timestamp, diff, and domain event emitter. |
+| **`/login` / `/signup`** | **Auth Pages** | Argon2 password security, live password strength checklist, JWT session management. |
+| **`:4000/api/docs`** | **Swagger API** | Interactive OpenAPI documentation for all 21 modular NestJS endpoints. |
+
+---
+
+## Seed Accounts
+
+| Email                     | Password       | Role       |
+|---------------------------|----------------|------------|
+| `admin@brightloop.test`   | `Admin@12345!` | **ADMIN**  |
+| `staff@brightloop.test`   | `Staff@12345!` | **STAFF**  |
+| `cust1@brightloop.test`   | `Cust@12345!`  | **CUSTOMER** |
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Browser                                                        │
+│  Next.js 15 (App Router · Tailwind CSS · Recharts)             │
+│  :3000                                                          │
+└─────────────────┬───────────────────────────────────────────────┘
+                  │ REST (Bearer JWT)
+┌─────────────────▼───────────────────────────────────────────────┐
+│  NestJS 10 API  :4000                                           │
+│  ┌──────────┐ ┌──────────┐ ┌───────────┐ ┌─────────────────┐  │
+│  │ Auth     │ │ Billing  │ │ Payments  │ │ Notifications   │  │
+│  │ Users    │ │ Discounts│ │ Razorpay  │ │ WhatsApp        │  │
+│  │ Catalog  │ │ Tax      │ │ Reconcile │ │ AI Assistant    │  │
+│  │ Subs     │ │ Proration│ │ Rescue    │ │ MRR / Leakage   │  │
+│  └──────────┘ └──────────┘ └───────────┘ └─────────────────┘  │
+│  ┌──────────────┐  ┌───────────┐  ┌──────────────────────────┐  │
+│  │ PostgreSQL 16│  │ Redis 7   │  │ BullMQ (job queues)      │  │
+│  │ Prisma 5     │  │ (cache)   │  │ @nestjs/schedule (cron)  │  │
+│  └──────────────┘  └───────────┘  └──────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+         ▲                    ▲
+Inbound webhooks:    Outbound integrations:
+Razorpay · Twilio    Twilio (WhatsApp) · Razorpay · Anthropic AI
+```
+
+---
+
+## Monorepo Layout
+
+```
+billpilot/
+├── apps/
+│   ├── api/          NestJS backend (Person A, B, C, D modules)
+│   └── web/          Next.js frontend
+├── packages/
+│   └── shared/       Zod schemas, enums, event types, contracts
+├── prisma/
+│   ├── schema/       Multi-file Prisma schema (one per owner)
+│   └── seed/         Factories + seed orchestrator
+├── docker/           Postgres init SQL (read-only role + views)
+├── docs/             DECISIONS.md, ARCHITECTURE.md, EVENTS.md …
+├── docker-compose.yml
+└── .env.example
+```
+
+---
+
+## Feature Overview
+
+### Must-ship (original brief — REQ)
+- ✅ Sign-up with email + strong password (shared Zod schema, client + server)
+- ✅ Login / refresh / logout · Forgot-password with expiring token
+- ✅ Three roles: ADMIN, STAFF, CUSTOMER — every route role-guarded
+- ✅ Products with variants (brand = Odoo +₹560)
+- ✅ Plans with billing periods and lifecycle switches
+- ✅ Quotation templates → Subscription (SUB-2026-000001 number)
+- ✅ Status machine: Draft → Quotation → Confirmed → Active → Closed
+- ✅ Pause / Resume / Early-close / Renew / Auto-close
+- ✅ Invoice auto-generation with idempotency (unique constraint + transaction)
+- ✅ Bulk billing run + manual button; "already billed" on double-click
+- ✅ Tax calculation per line (inclusive / exclusive), 2 dp rounding
+- ✅ Invoice PDF, confirm, cancel, send
+- ✅ Discounts: fixed/%, conditions, usage limit (concurrency-safe UPDATE)
+- ✅ Payments: partial + overpayment → credit balance
+- ✅ Dashboard: active subs, revenue, owed, overdue — < 2 s at 5 000+ rows
+
+### Tier 1 (must-ship wins)
+- ✅ WhatsApp invoice delivery + receipt + reminders (Twilio Sandbox)
+- ✅ Razorpay payment link with HMAC-verified, replay-safe webhook
+- ✅ MRR / ARR dashboard with movement chart
+- ✅ Audit log — who changed what and when
+- ✅ Load-time badge in the footer
+- ✅ 5 000+ subscriptions seed with `--scale=5000`
+
+### Tier 2 (wow)
+- AI Finance Assistant (text-to-SQL, read-only views, SQL validator)
+- Natural-language → Quotation via Claude tool-calling
+- Revenue Leakage Detector with one-click fixes
+- Payment Rescue Engine (failure classification + retry scheduler)
+- Bank CSV reconciliation (fuzzy matching, net-of-fee)
+- "Why is my bill ₹X?" explainer stepper
+- Proration preview for plan changes
+
+### Tier 3 (polish / cut first)
+- Dry-run billing, mandates, margin screen, multi-currency
+- Cash-flow forecast, Savings Advisor, dark mode
+
+---
+
+## WhatsApp Sandbox Setup
+
+1. Send `join <sandbox-code>` to **+1 415 523 8886** on WhatsApp
+2. Set `TWILIO_WEBHOOK_BASE_URL` in `.env` to your ngrok URL
+3. In Twilio console, set the sandbox webhook to:
+   `$TWILIO_WEBHOOK_BASE_URL/api/v1/webhooks/twilio/whatsapp`
+
+Two-way bot commands: `balance` · `invoice` · `pause` · `renew` · `cancel` · `help`  
+Destructive actions (pause, cancel) require a `YES` confirmation reply.
+
+---
+
+## Ownership
+
+| Person | Branch               | Owns |
+|--------|----------------------|------|
+| **A**  | `feat/core`          | Auth, Users, Catalog, Subscriptions, Dashboard, Audit, Portal shell |
+| **B**  | `feat/billing`       | Invoices, Tax, Discounts, Proration, Disputes |
+| **C**  | `feat/payments`      | Payments, Razorpay, Reconciliation, Rescue, Mandates |
+| **D**  | `feat/insights-comms`| Notifications, WhatsApp, MRR, Leakage, AI Assistant |
+
+---
+
+## Key Commands
 
 ```bash
-pnpm db:seed --scale=5000     # 5,000+ subscriptions and ~60k invoices
+pnpm dev               # Start all (turbo)
+pnpm db:migrate        # Run Prisma migrations
+pnpm db:seed           # Seed with default data
+pnpm db:seed -- --scale=5000   # Seed 5 000+ subscriptions
+pnpm db:reset          # Reset DB and re-seed
+pnpm db:studio         # Open Prisma Studio
+pnpm db:generate       # Regenerate Prisma client
+pnpm test              # Run all tests (vitest)
+pnpm lint              # Lint all packages
+pnpm typecheck         # Type-check all packages
+pnpm perf:check        # Hit key endpoints, fail if p95 > 1 500 ms
 ```
 
 ---
 
-## Environment Variables
+## Performance Budget
 
-Copy `.env.example` to `.env`. Key variables:
+Every page and API endpoint must respond in **under 2 seconds** with 5 000+ subscriptions.
 
-| Variable | Purpose |
-|----------|---------|
-| `DATABASE_URL` | Main Postgres connection |
-| `DATABASE_URL_READONLY` | Read-only role used by the AI assistant (views only) |
-| `REDIS_URL` | Redis connection |
-| `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` | Token signing secrets |
-| `JWT_ACCESS_TTL`, `JWT_REFRESH_TTL` | `15m` / `7d` |
-| `APP_URL`, `API_URL` | Web and API base URLs |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM` | Mailhog SMTP |
-| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM`, `TWILIO_WEBHOOK_BASE_URL` | WhatsApp |
-| `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | Payments |
-| `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` | AI features |
-| `BILLING_CRON`, `OVERDUE_CRON` | Scheduled jobs |
-| `DEFAULT_CURRENCY`, `COMPANY_NAME`, `COMPANY_GSTIN` | Invoice defaults |
+Techniques used:
+- Composite indexes on all hot query paths (see schema)
+- Keyset pagination on invoices and audit logs (`?cursor=`)
+- Redis caching on report aggregates (60 s TTL, invalidated on events)
+- `SELECT` only needed columns; no N+1 queries
+- `X-Response-Time` header on every response
+- Load-time badge in the web footer
 
 ---
 
-## Seeded Accounts
+## Security
 
-| Role | Email | Password |
-|------|-------|----------|
-| ADMIN | `admin@brightloop.test` | `Admin@12345!` |
-| STAFF | `staff@brightloop.test` | `Staff@12345!` |
-| CUSTOMER | `cust1@brightloop.test` | `Cust@12345!` |
-
-Default seed: 3 users, 6 plans, 12 products with variants (including brand=Odoo +560), 3 tax rules (GST 5/12/18), 50 customers, 200 subscriptions in mixed statuses.
-
----
-
----
-
-## API Overview
-
-Base path: `/api/v1`. JSON only. Dates are ISO-8601 UTC. Money is a string with 2 decimals.
-
-- **Pagination:** `?page=1&limit=20` (max 100) returns `{ data, meta: { page, limit, total, totalPages } }`. Keyset `?cursor=` on large tables.
-- **Sorting / filtering:** `?sort=createdAt:desc&status=ACTIVE&from=&to=`
-- **Errors:** `{ "error": { "code", "message", "details", "requestId" } }`
-- **Auth:** Bearer JWT with claims `{ sub, role, customerId?, email }`. Deny by default; `@Public()` opts out.
-- **Headers:** every response carries `X-Request-Id` and `X-Response-Time`.
-- **Idempotency:** `Idempotency-Key` supported on `POST /invoices/run-billing` and `POST /payments`.
-- **Rate limit:** auth endpoints 10/min per IP.
-
-Hello-flow endpoints available out of the box:
-
-```
-POST /api/v1/auth/signup
-POST /api/v1/auth/login
-GET  /api/v1/auth/me
-GET  /api/v1/health
-GET  /api/v1/plans
-GET  /api/v1/admin/ping        (ADMIN only)
-POST /api/v1/dev/emit-test     (emits invoice.confirmed)
-```
-
-Full conventions: [`docs/API_CONVENTIONS.md`](docs/API_CONVENTIONS.md).
+- JWT: 15-min access token + 7-day httpOnly refresh token
+- Passwords: argon2 hash; strength rules enforced client + server (shared Zod)
+- Role guard on every route (default deny; `@Public()` to opt out)
+- Customer queries scoped by `customerId` from JWT, never from request params
+- Webhook signatures: HMAC-SHA256 timing-safe compare (Razorpay + Twilio)
+- Webhook replay safety: `WebhookEvent` table with unique event ID
+- AI assistant: read-only Postgres role, allowlisted views only, SQL validation, row limit + timeout
+- Rate limiting: 10 req/min on auth endpoints (@nestjs/throttler)
+- Forgot-password: always returns 200 (no user enumeration)
 
 ---
 
-## Roles and Access
+## Tech Stack
 
-| Feature | ADMIN | STAFF | CUSTOMER |
-|---------|:-----:|:-----:|:--------:|
-| Users / staff management | W | - | - |
-| Products / Plans | W | R | R (public plans) |
-| Tax rules | W | R | - |
-| Discounts | W | R | - |
-| Quotation templates | W | W | - |
-| Subscriptions | W | W | R (own) |
-| Invoices | W | W | R (own) |
-| Payments | W | W | R (own) |
-| Dashboard / Reports | W | R | - |
-| Audit log | R | - | - |
-| AI assistant | W | R (finance only, config flag) | - |
-| Reconciliation | W | W | - |
-
-`R` = read, `W` = write, `-` = none. All checks are enforced server-side; customer queries are scoped by `customerId` from the JWT, never from request parameters.
-
----
-
-## Team, Branches and Ownership
-
-| Person | Branch | API modules | Web routes | Prisma |
-|--------|--------|-------------|------------|--------|
-| **A** | `feat/core` | auth, users, catalog, subscriptions, reports, audit, common | auth, dashboard, products, plans, quotation-templates, subscriptions, staff, audit-log, portal shell | `a_core.prisma`, seed, docker, CI |
-| **B** | `feat/billing` | billing, discounts, proration, tax, disputes | invoices, discounts, taxes, my/invoices | `b_billing.prisma` |
-| **C** | `feat/payments` | payments, rescue, reconcile, paylinks, mandates | payments, reconcile, rescue, my/payments | `c_payments.prisma` |
-| **D** | `feat/insights-comms` | notifications, whatsapp, insights, ai, forecasts | mrr, leakage, assistant, settings/templates, my/savings | `d_insights.prisma` |
-
-Branches: `main` (protected) <- `develop` (integration) <- the four feature branches.
-
-**Rules**
-1. Edit only your own folders.
-2. Schema changes must be additive and announced in chat.
-3. Call other modules through service contracts and events only (import from module barrels).
-4. Rebase onto `develop` hourly.
-5. Mock until the real implementation lands.
-
-Your task list lives in `docs/TASKS_A.md` ... `docs/TASKS_D.md`.
-
----
-
-## Integrations Setup
-
-### Mailhog (email)
-Runs via Docker. View sent emails (password reset, invoices) at http://localhost:8025.
-
-### Twilio WhatsApp Sandbox
-1. Create a Twilio account and open the WhatsApp Sandbox.
-2. Each tester sends the sandbox join code (shown in the console) to the sandbox number from their WhatsApp.
-3. Set `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM` in `.env`.
-4. Expose the API with ngrok: `ngrok http 4000`, set `TWILIO_WEBHOOK_BASE_URL` to the ngrok URL.
-5. In the Twilio console set the inbound webhook to `<ngrok-url>/api/v1/webhooks/twilio/whatsapp`.
-6. The customer must have `whatsappOptIn = true` and a verified E.164 phone.
-
-### Razorpay (test mode)
-1. Get test keys from the Razorpay dashboard; set `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET`.
-2. Create a webhook pointing to `<ngrok-url>/api/v1/webhooks/razorpay` with events `payment_link.paid` and `payment.captured`.
-3. Set `RAZORPAY_WEBHOOK_SECRET` to the secret you chose. Signatures are verified with HMAC-SHA256 on the raw body.
-
-### Anthropic (AI)
-Set `ANTHROPIC_API_KEY`. Model is configurable through `ANTHROPIC_MODEL`. The finance assistant only queries allowlisted `v_*` views through the read-only `billpilot_ro` role.
-
----
-
-## Testing
-
-```bash
-pnpm test              # unit + e2e across packages
-pnpm -r typecheck
-pnpm lint
-```
-
-Critical-path tests: password rules, role guard (403), double billing (idempotency), discount exhaustion under concurrency, webhook replay, partial payment, overpayment, proration rounding, AI SQL validator rejecting DELETE and multi-statement queries. One Playwright smoke test covers login.
-
----
-
-## Performance
-
-Target: p95 under 2 seconds on every page and endpoint with 5,000+ subscriptions and ~60,000 invoices.
-
-- Composite indexes, keyset pagination, narrow selects, no N+1
-- Redis caching on reports (60s, invalidated on payment and invoice events)
-- gzip compression, Next.js streaming and skeleton loaders
-- `X-Response-Time` header; the UI footer shows a "Loaded in N ms" badge
-- `pnpm perf:check` enforces the budget
-
----
-
-
-
-## Troubleshooting
-
-| Problem | Fix |
-|---------|-----|
-| Port 5432 / 6379 already in use | Stop local Postgres/Redis or change the ports in `docker-compose.yml` and `.env` |
-| `prisma migrate` fails on relations | Run `pnpm prisma validate`; every relation needs both sides defined across schema files |
-| Login works but redirects wrongly | Staff go to `/dashboard`, customers to `/my/subscriptions` |
-| WhatsApp messages not arriving | Confirm the phone joined the sandbox, opt-in is true, and the ngrok URL is current |
-| Razorpay webhook returns 400 | Check `RAZORPAY_WEBHOOK_SECRET` and that the raw body is used for the signature |
-| Reset DB cleanly | `pnpm db:reset` |
-
----
-
+| Layer | Choice |
+|-------|--------|
+| **Frontend** | Next.js 15 (App Router) + TypeScript + Tailwind CSS + Recharts |
+| **Backend** | NestJS 10 + TypeScript + Zod validation |
+| **Database** | PostgreSQL 16 + Prisma 5 (multi-file schema) |
+| **Queue** | Redis 7 + BullMQ + @nestjs/schedule |
+| **Auth** | JWT (argon2 passwords) |
+| **PDF** | pdfkit |
+| **Email** | nodemailer → Mailhog (local) |
+| **WhatsApp** | Twilio Sandbox |
+| **Payments** | Razorpay (test mode) |
+| **AI** | Anthropic Claude (claude-sonnet-4-5) |
+| **Monorepo** | pnpm workspaces + Turborepo |
+| **Testing** | Vitest + Supertest + Playwright |
