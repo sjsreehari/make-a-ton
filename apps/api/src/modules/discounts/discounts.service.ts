@@ -67,6 +67,19 @@ export class DiscountsService {
     return discount;
   }
 
+  /**
+   * Concurrency-safe guarded increment for discount usage limits.
+   * Returns true if increment succeeded, false if limit was reached.
+   */
+  async incrementUsage(discountId: string, tx?: any): Promise<boolean> {
+    const client = tx || this.prisma;
+    const affected: number = await client.$executeRawUnsafe(
+      'UPDATE `Discount` SET `usedCount` = `usedCount` + 1 WHERE `id` = ? AND (`usageLimit` IS NULL OR `usedCount` < `usageLimit`)',
+      discountId,
+    );
+    return affected === 1;
+  }
+
   async delete(id: string, actorId: string) {
     try {
       const deleted = await this.prisma.discount.delete({ where: { id } });

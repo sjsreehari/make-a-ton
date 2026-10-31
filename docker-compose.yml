@@ -1,29 +1,24 @@
 services:
-  postgres:
-    image: postgres:16
-    container_name: billpilot_postgres
+  mysql:
+    image: mysql:8.0
+    container_name: billpilot_mysql
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_0900_ai_ci
+      --default-time-zone=+00:00
+      --max_allowed_packet=64M
     environment:
-      POSTGRES_USER: billpilot
-      POSTGRES_PASSWORD: billpilot
-      POSTGRES_DB: billpilot
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: billpilot
+      MYSQL_USER: billpilot
+      MYSQL_PASSWORD: billpilot
     ports:
-      - '5432:5432'
+      - '3306:3306'
     volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysqldata:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U billpilot']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  redis:
-    image: redis:7
-    container_name: billpilot_redis
-    ports:
-      - '6379:6379'
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'billpilot', '-pbillpilot']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -36,4 +31,4 @@ services:
       - '8025:8025'
 
 volumes:
-  pgdata:
+  mysqldata:

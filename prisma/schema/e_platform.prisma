@@ -1,0 +1,27 @@
+enum JobStatus {
+  PENDING
+  RUNNING
+  DONE
+  FAILED
+  DEAD
+}
+
+model Job {
+  id          String    @id @default(uuid())
+  queue       String    @db.VarChar(100)
+  type        String    @db.VarChar(100)
+  payload     Json
+  status      JobStatus @default(PENDING)
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(5)
+  runAt       DateTime  @default(now())
+  lockedAt    DateTime?
+  lockedBy    String?   @db.VarChar(100)
+  lastError   String?   @db.Text
+  dedupeKey   String?   @unique @db.VarChar(191)
+  createdAt   DateTime  @default(now())
+  finishedAt  DateTime?
+
+  @@index([status, runAt])
+  @@index([queue, status, runAt])
+}

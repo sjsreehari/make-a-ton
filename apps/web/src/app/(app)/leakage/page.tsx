@@ -75,7 +75,7 @@ export default function LeakagePage() {
     try {
       setFixingId("ALL");
       for (const item of unresolved) {
-        await api.insights.fixLeakage(item.id).catch(() => {});
+        await api.insights.fixLeakage(item.id).catch(() => { });
       }
       setNotice(`Remediated ${unresolved.length} leakage anomalies in MySQL!`);
       await fetchLeakage();
@@ -137,16 +137,14 @@ export default function LeakagePage() {
 
       {/* Big Risk Banner */}
       <div
-        className={`p-5 rounded-xl border transition-all ${
-          totalAtRisk > 0 ? "border-red-500/30 bg-red-500/10" : "border-emerald-500/30 bg-emerald-500/10"
-        }`}
+        className={`p-5 rounded-xl border transition-all ${totalAtRisk > 0 ? "border-red-500/30 bg-red-500/10" : "border-emerald-500/30 bg-emerald-500/10"
+          }`}
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div
-              className={`size-10 rounded-xl flex items-center justify-center ${
-                totalAtRisk > 0 ? "bg-red-500/20 text-red-400" : "bg-emerald-500/20 text-emerald-400"
-              }`}
+              className={`size-10 rounded-xl flex items-center justify-center ${totalAtRisk > 0 ? "bg-red-500/20 text-red-400" : "bg-emerald-500/20 text-emerald-400"
+                }`}
             >
               {totalAtRisk > 0 ? <AlertTriangle className="size-5" /> : <CheckCircle2 className="size-5" />}
             </div>
@@ -190,11 +188,10 @@ export default function LeakagePage() {
             return (
               <div
                 key={leak.id}
-                className={`p-4 rounded-xl border transition-all ${
-                  isResolved
+                className={`p-4 rounded-xl border transition-all ${isResolved
                     ? "border-emerald-500/20 bg-emerald-500/5 opacity-70"
                     : "border-border bg-card/60 hover:border-zinc-700"
-                }`}
+                  }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="space-y-1">
@@ -218,9 +215,8 @@ export default function LeakagePage() {
                     <div className="text-right">
                       <span className="text-[10px] text-muted-foreground block uppercase">At Risk</span>
                       <span
-                        className={`text-sm font-bold font-mono ${
-                          isResolved ? "line-through text-zinc-500" : "text-red-400"
-                        }`}
+                        className={`text-sm font-bold font-mono ${isResolved ? "line-through text-zinc-500" : "text-red-400"
+                          }`}
                       >
                         ₹{Number(leak.amountAtRisk || 0).toLocaleString("en-IN")}
                       </span>

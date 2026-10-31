@@ -40,7 +40,7 @@ enum PlanChangeStatus {
 
 model Invoice {
   id             String          @id @default(cuid())
-  number         String          @unique
+  number         String          @unique @db.VarChar(191)
   subscriptionId String
   subscription   Subscription    @relation(fields: [subscriptionId], references: [id])
   customerId     String
@@ -71,7 +71,9 @@ model Invoice {
   @@unique([subscriptionId, periodStart, periodEnd])
   @@index([customerId, status])
   @@index([status, dueDate])
+  @@index([subscriptionId])
   @@index([issueDate])
+  @@index([periodStart])
 }
 
 model InvoiceLine {
@@ -79,7 +81,7 @@ model InvoiceLine {
   invoiceId      String
   invoice        Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   productId      String?
-  description    String
+  description    String  @db.Text
   quantity       Int
   unitPrice      Decimal @db.Decimal(14, 2)
   lineSubtotal   Decimal @db.Decimal(14, 2)
@@ -94,7 +96,7 @@ model InvoiceLine {
 
 model Discount {
   id                String          @id @default(cuid())
-  code              String          @unique
+  code              String          @unique @db.VarChar(191)
   name              String
   type              DiscountType
   value             Decimal         @db.Decimal(14, 2)
@@ -139,12 +141,14 @@ model ProrationAdjustment {
 
 model CreditMemo {
   id        String   @id @default(cuid())
-  number    String   @unique
+  number    String   @unique @db.VarChar(191)
   invoiceId String
   invoice   Invoice  @relation(fields: [invoiceId], references: [id])
   amount    Decimal  @db.Decimal(14, 2)
-  reason    String
+  reason    String   @db.Text
   createdAt DateTime @default(now())
+
+  @@index([invoiceId])
 }
 
 model PlanChangeRequest {
@@ -161,14 +165,16 @@ model PlanChangeRequest {
 }
 
 model Dispute {
-  id         String        @id @default(cuid())
-  invoiceId  String
-  invoice    Invoice       @relation(fields: [invoiceId], references: [id])
-  raisedById String
-  reason     String
-  status     DisputeStatus @default(OPEN)
-  packet     Json?
-  resolution String?
-  createdAt  DateTime      @default(now())
-}
+  id             String        @id @default(cuid())
+  invoiceId      String
+  invoice        Invoice       @relation(fields: [invoiceId], references: [id])
+  raisedById     String
+  reason         String        @db.Text
+  status         DisputeStatus @default(OPEN)
+  packet         Json?
+  resolution     String?       @db.Text
+  resolutionNote String?       @db.Text
+  createdAt      DateTime      @default(now())
 
+  @@index([invoiceId])
+}

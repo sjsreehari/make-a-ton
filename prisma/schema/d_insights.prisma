@@ -29,14 +29,14 @@ enum RiskBand {
 model NotificationLog {
   id                String             @id @default(cuid())
   channel           Channel
-  template          String
+  template          String             @db.VarChar(100)
   toAddress         String
   customerId        String?
-  entity            String?
-  entityId          String?
+  entity            String?            @db.VarChar(100)
+  entityId          String?            @db.VarChar(100)
   payload           Json
   status            NotificationStatus @default(QUEUED)
-  providerMessageId String?
+  providerMessageId String?            @db.VarChar(191)
   error             String?            @db.Text
   attempts          Int                @default(0)
   createdAt         DateTime           @default(now())
@@ -44,12 +44,13 @@ model NotificationLog {
 
   @@index([customerId, createdAt])
   @@index([status])
+  @@index([entity, entityId])
   @@unique([template, entity, entityId, channel])
 }
 
 model MessageTemplate {
   id        String   @id @default(cuid())
-  key       String   @unique
+  key       String   @unique @db.VarChar(100)
   channel   Channel
   subject   String?
   body      String   @db.Text
@@ -59,7 +60,7 @@ model MessageTemplate {
 
 model WhatsAppSession {
   id         String    @id @default(cuid())
-  phone      String    @unique
+  phone      String    @unique @db.VarChar(50)
   customerId String?
   verifiedAt DateTime?
   lastIntent String?
@@ -70,8 +71,8 @@ model WhatsAppSession {
 model LeakageFinding {
   id           String      @id @default(cuid())
   kind         FindingKind
-  entity       String
-  entityId     String
+  entity       String      @db.VarChar(100)
+  entityId     String      @db.VarChar(100)
   amountAtRisk Decimal     @db.Decimal(14, 2)
   detail       Json
   resolvedAt   DateTime?
@@ -111,3 +112,16 @@ model MrrSnapshot {
   activeCount    Int
 }
 
+model AiQueryLog {
+  id           String   @id @default(cuid())
+  userId       String?
+  question     String   @db.Text
+  generatedSql String?  @db.Text
+  success      Boolean  @default(true)
+  error        String?  @db.Text
+  durationMs   Int?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId])
+}

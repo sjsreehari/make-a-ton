@@ -53,9 +53,9 @@ model Payment {
   method       PaymentMethod
   amount       Decimal       @db.Decimal(14, 2)
   paidAt       DateTime
-  note         String?
+  note         String?       @db.Text
   status       PaymentStatus @default(RECORDED)
-  externalRef  String?       @unique
+  externalRef  String?       @unique @db.VarChar(191)
   recordedById String?
   createdAt    DateTime      @default(now())
 
@@ -69,22 +69,25 @@ model PaymentAttempt {
   invoiceId       String
   mandateId       String?
   attemptNo       Int
-  status          String
+  status          String       @db.VarChar(50)
   failureKind     FailureKind?
-  failureMessage  String?
+  failureMessage  String?      @db.Text
   nextRetryAt     DateTime?
   recoveredAmount Decimal?     @db.Decimal(14, 2)
   at              DateTime     @default(now())
 
   @@index([invoiceId])
   @@index([nextRetryAt])
+  @@index([status, nextRetryAt])
+  @@index([invoiceId, attemptNo])
 }
 
 model FailureReason {
   id              String      @id @default(cuid())
   kind            FailureKind
-  code            String
-  recoveryPath    String
+  code            String      @db.VarChar(100)
+  recoveryPath    String      @db.Text
+  description     String?     @db.Text
   retryAfterHours Int
 
   @@unique([kind, code])
@@ -92,15 +95,18 @@ model FailureReason {
 
 model BankTransaction {
   id           String                @id @default(cuid())
-  batchId      String
+  batchId      String                @db.VarChar(100)
   txnDate      DateTime
   amount       Decimal               @db.Decimal(14, 2)
-  reference    String
-  narration    String?
+  reference    String                @db.VarChar(191)
+  narration    String?               @db.Text
+  description  String?               @db.Text
   counterparty String?
+  status       MatchStatus           @default(UNMATCHED)
   matches      ReconciliationMatch[]
 
   @@index([batchId])
+  @@index([status])
   @@index([amount, txnDate])
 }
 
@@ -115,6 +121,8 @@ model ReconciliationMatch {
   feeDetected       Decimal?        @db.Decimal(14, 2)
   signals           Json
   reviewedById      String?
+
+  @@index([bankTransactionId])
 }
 
 model Mandate {
@@ -126,7 +134,7 @@ model Mandate {
   status      MandateStatus @default(ACTIVE)
   validFrom   DateTime
   validTo     DateTime?
-  externalRef String?
+  externalRef String?       @db.VarChar(191)
   notices     NoticeLog[]
 
   @@index([customerId])
@@ -142,13 +150,16 @@ model NoticeLog {
   channel     String
   dueNoticeBy DateTime
   compliant   Boolean  @default(true)
+
+  @@index([mandateId])
 }
 
 model PaymentLink {
   id             String            @id @default(cuid())
   invoiceId      String
-  razorpayLinkId String            @unique
-  shortUrl       String
+  razorpayLinkId String            @unique @db.VarChar(191)
+  shortUrl       String            @db.Text
+  url            String?           @db.Text
   amount         Decimal           @db.Decimal(14, 2)
   status         PaymentLinkStatus @default(CREATED)
   expiresAt      DateTime?
@@ -159,9 +170,11 @@ model PaymentLink {
 }
 
 model WebhookEvent {
-  id          String   @id
-  provider    String
+  id          String   @id @db.VarChar(191)
+  provider    String   @db.VarChar(100)
+  eventId     String?  @db.VarChar(191)
   payload     Json
   processedAt DateTime @default(now())
-}
 
+  @@index([provider, eventId])
+}
