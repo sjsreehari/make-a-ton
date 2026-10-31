@@ -174,3 +174,4 @@ export class CatalogService {
     return variant;
   }
 }
+

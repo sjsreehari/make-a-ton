@@ -11,3 +11,4 @@
 - [ ] Connect Mailhog nodemailer integration for reset email delivery
 - [ ] Refresh token rotation endpoint POST /api/v1/auth/refresh
 - [ ] Logout endpoint to revoke active refresh tokens
+

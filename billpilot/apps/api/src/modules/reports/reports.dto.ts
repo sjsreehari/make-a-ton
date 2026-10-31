@@ -9,3 +9,4 @@ export const reportFilterSchema = z.object({
 });
 
 export type ReportFilterDto = z.infer<typeof reportFilterSchema>;
+

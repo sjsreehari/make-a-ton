@@ -14,3 +14,4 @@ import { DOMAIN_EVENTS_QUEUE } from '@billpilot/shared';
   exports: [EventBusService],
 })
 export class EventBusModule {}
+

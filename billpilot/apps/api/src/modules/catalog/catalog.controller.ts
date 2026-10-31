@@ -84,3 +84,4 @@ export class CatalogController {
     return this.catalogService.addVariant(dto, user.sub);
   }
 }
+

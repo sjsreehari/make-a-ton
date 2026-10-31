@@ -42,3 +42,4 @@ export function buildMeta(total: number, params: PaginationParams): PaginationMe
     totalPages: Math.ceil(total / limit) || 1,
   };
 }
+

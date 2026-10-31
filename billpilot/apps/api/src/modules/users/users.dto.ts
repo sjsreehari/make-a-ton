@@ -10,3 +10,4 @@ export const createStaffSchema = z.object({
 });
 
 export type CreateStaffDto = z.infer<typeof createStaffSchema>;
+

@@ -110,3 +110,4 @@ model MrrSnapshot {
   churnedMrr     Decimal  @db.Decimal(14, 2)
   activeCount    Int
 }
+

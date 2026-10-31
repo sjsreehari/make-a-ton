@@ -238,3 +238,4 @@ export async function seedCore(prisma: PrismaClient, scale: number) {
 
   return { admin, staff, customers: allCustomers, plans, products, subscriptions: subBatch };
 }
+

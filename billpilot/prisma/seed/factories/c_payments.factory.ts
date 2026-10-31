@@ -27,3 +27,4 @@ export async function seedPayments(prisma: PrismaClient) {
     });
   }
 }
+

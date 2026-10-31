@@ -28,3 +28,4 @@ export class ReportsController {
     return this.reportsService.getDashboardSummary(query);
   }
 }
+

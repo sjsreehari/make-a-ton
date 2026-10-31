@@ -11,3 +11,4 @@
 - [ ] Connect pdfkit to renderPdf method
 - [ ] Automatic discount application inside transaction
 - [ ] Idempotency e2e integration test verification
+

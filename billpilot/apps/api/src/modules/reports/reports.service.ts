@@ -66,3 +66,4 @@ export class ReportsService {
     return { ...summary, fromCache: false };
   }
 }
+

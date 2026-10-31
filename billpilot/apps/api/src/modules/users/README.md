@@ -9,3 +9,4 @@
 ## Next Tasks for Person A
 - [ ] Edit user roles / active status
 - [ ] Customer profile management
+

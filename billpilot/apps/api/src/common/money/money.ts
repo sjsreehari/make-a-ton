@@ -46,3 +46,4 @@ export function allocate(amount: Decimal | string | number, ratios: number[]): D
 
   return results;
 }
+

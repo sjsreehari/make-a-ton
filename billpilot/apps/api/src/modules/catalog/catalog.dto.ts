@@ -17,3 +17,4 @@ export type CreateProductDto = z.infer<typeof createProductSchema>;
 export type CreateVariantDto = z.infer<typeof createVariantSchema>;
 export type CreatePlanDto = z.infer<typeof createPlanSchema>;
 export type CreateQuotationTemplateDto = z.infer<typeof createQuotationTemplateSchema>;
+

@@ -35,3 +35,4 @@ export class EventBusService {
     this.logger.log(`Domain event emitted: ${event}`);
   }
 }
+

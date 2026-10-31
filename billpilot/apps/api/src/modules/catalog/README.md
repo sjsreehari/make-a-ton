@@ -10,3 +10,4 @@
 ## Next Tasks for Person A
 - [ ] Quotation template CRUD endpoints
 - [ ] Soft deletion / deactivate flags for products and plans
+

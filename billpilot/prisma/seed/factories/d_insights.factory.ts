@@ -44,3 +44,4 @@ export async function seedInsights(prisma: PrismaClient) {
     },
   });
 }
+

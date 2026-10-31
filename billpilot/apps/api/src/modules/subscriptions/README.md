@@ -11,3 +11,4 @@
 ## Next Tasks for Person A
 - [ ] Auto-close background job for expired subscriptions
 - [ ] Quotation expiration scheduled task
+
