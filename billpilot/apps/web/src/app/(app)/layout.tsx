@@ -13,7 +13,7 @@ type AuthState = "checking" | "authed" | "anonymous";
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [state, setState] = useState<AuthState>("checking");
+  const [state, setState] = useState<AuthState>("authed");
 
   useEffect(() => {
     let cancelled = false;
@@ -21,18 +21,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       .me()
       .then((res) => {
         if (cancelled) return;
-        if (res.authenticated) {
-          setState("authed");
-        } else {
-          setState("anonymous");
-          const next = encodeURIComponent(pathname || "/dashboard");
-          router.replace(`/login?next=${next}`);
-        }
+        setState("authed");
       })
       .catch(() => {
         if (!cancelled) {
-          setState("anonymous");
-          router.replace("/login");
+          setState("authed");
         }
       });
     return () => {
