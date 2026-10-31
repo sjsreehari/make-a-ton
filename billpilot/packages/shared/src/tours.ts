@@ -145,3 +145,4 @@ export const TOURS: Record<string, GuidedTour> = {
     ],
   },
 };
+

@@ -23,3 +23,4 @@ export interface LlmChatResult {
 export interface ILlmClient {
   chat(options: LlmChatOptions): Promise<LlmChatResult>;
 }
+

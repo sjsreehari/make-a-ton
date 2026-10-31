@@ -18,3 +18,4 @@ export interface ITool<TInput = Record<string, unknown>, TOutput = unknown> {
   readonly roles: string[];
   execute(input: TInput, userContext: { userId: string; role: string; customerId?: string }): Promise<ToolResult<TOutput>>;
 }
+
