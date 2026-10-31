@@ -39,8 +39,10 @@ import { StartTourTool } from './tools/common/start-tour.tool';
 import { ProposeActionTool } from './tools/common/propose-action.tool';
 
 import { CommonAuditService } from '../../common/audit/audit.service';
+import { InsightsModule } from '../insights/insights.module';
 
 @Module({
+  imports: [InsightsModule],
   controllers: [AiController],
   providers: [
     AiService,

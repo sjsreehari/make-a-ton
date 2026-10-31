@@ -128,7 +128,8 @@ export interface Customer {
 // Client helper that automatically ensures valid Bearer token for local developer convenience
 function isAccessTokenExpired(token: string): boolean {
   try {
-    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    const encodedPayload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(encodedPayload + '='.repeat((4 - encodedPayload.length % 4) % 4)));
     return typeof payload.exp !== 'number' || payload.exp * 1000 <= Date.now() + 30_000;
   } catch {
     return true;
@@ -141,6 +142,7 @@ async function getAuthHeader(forceLogin = false): Promise<string | null> {
   if (token && isAccessTokenExpired(token)) token = null;
   if (!token) {
     localStorage.removeItem("billpilot_token");
+    if (forceLogin) localStorage.removeItem("billpilot_user");
     try {
       const res = await fetch("/api/v1/auth/login", {
         method: "POST",
