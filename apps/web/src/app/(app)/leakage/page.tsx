@@ -26,7 +26,7 @@ export default function LeakagePage() {
       setFindings(res.findings || []);
       setTotalAtRisk(res.totalAmountAtRisk || 0);
     } catch (err: any) {
-      console.error("Failed to load leakage findings from MySQL:", err);
+      console.error("Failed to load leakage findings:", err);
     } finally {
       setLoading(false);
     }
@@ -42,7 +42,7 @@ export default function LeakagePage() {
       const res = await api.insights.scanLeakage();
       setFindings(res.findings || []);
       setTotalAtRisk(res.totalAmountAtRisk || 0);
-      setNotice(`Full database leakage scan completed in MySQL! Found ${res.totalFindings} potential anomalies.`);
+      setNotice(`Scan complete. Found ${res.totalFindings} potential issues.`);
       setTimeout(() => setNotice(null), 4000);
     } catch (err: any) {
       alert(err.message || "Failed to scan leakage");
@@ -55,7 +55,7 @@ export default function LeakagePage() {
     try {
       setFixingId(id);
       await api.insights.fixLeakage(id);
-      setNotice("Anomaly remediated and logged to MySQL audit trail!");
+      setNotice("Issue resolved and recorded in the audit log.");
       await fetchLeakage();
       setTimeout(() => setNotice(null), 3000);
     } catch (err: any) {
@@ -74,7 +74,7 @@ export default function LeakagePage() {
       for (const item of unresolved) {
         await api.insights.fixLeakage(item.id).catch(() => {});
       }
-      setNotice(`Remediated ${unresolved.length} leakage anomalies in MySQL!`);
+      setNotice(`Resolved ${unresolved.length} issues.`);
       await fetchLeakage();
       setTimeout(() => setNotice(null), 4000);
     } catch (err: any) {
@@ -92,13 +92,10 @@ export default function LeakagePage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Revenue Leakage Detector</h1>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              MySQL Scanner
-            </span>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Revenue leakage</h1>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Automated background scanners identify missed billings, expired discounts, and tax anomalies with 1-click remediation.
+            Find missed invoices, expired discounts, and tax issues that may affect revenue.
           </p>
         </div>
 
@@ -109,7 +106,7 @@ export default function LeakagePage() {
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-border bg-card hover:bg-muted text-foreground transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`size-3.5 ${loading ? "animate-spin" : ""}`} />
-            Scan MySQL Now
+            Scan for issues
           </button>
 
           {unresolvedList.length > 0 && (
@@ -119,7 +116,7 @@ export default function LeakagePage() {
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-medium bg-red-600 hover:bg-red-500 text-white transition-colors shadow-md shadow-red-600/20 disabled:opacity-50"
             >
               <Zap className={`size-3.5 ${fixingId === "ALL" ? "animate-spin" : ""}`} />
-              {fixingId === "ALL" ? "Fixing All in MySQL..." : `⚡ Fix All ${unresolvedList.length} (1-Click)`}
+              {fixingId === "ALL" ? "Resolving issues..." : `Resolve all (${unresolvedList.length})`}
             </button>
           )}
         </div>
@@ -160,10 +157,10 @@ export default function LeakagePage() {
           <div className="text-xs text-zinc-300">
             {totalAtRisk > 0 ? (
               <span>
-                {unresolvedList.length} billing anomalies actively preventing revenue capture.
+                {unresolvedList.length} billing issues may be affecting revenue.
               </span>
             ) : (
-              <span>All detected revenue leakages have been corrected in MySQL. 100% billing integrity verified.</span>
+              <span>No unresolved revenue issues were found.</span>
             )}
           </div>
         </div>
@@ -174,7 +171,7 @@ export default function LeakagePage() {
         {loading ? (
           <div className="p-8 text-center text-muted-foreground flex items-center justify-center gap-2">
             <RefreshCw className="size-4 animate-spin text-indigo-400" />
-            <span>Scanning MySQL database for revenue leakages...</span>
+            <span>Checking for revenue issues...</span>
           </div>
         ) : findings.length === 0 ? (
           <div className="p-8 rounded-xl border border-border bg-card/40 text-center text-muted-foreground">
@@ -202,7 +199,7 @@ export default function LeakagePage() {
                       <span className="font-mono text-xs text-muted-foreground">Entity: {leak.entityId}</span>
                       {isResolved && (
                         <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                          ✓ Remediated in MySQL
+                          Resolved
                         </span>
                       )}
                     </div>
@@ -230,7 +227,7 @@ export default function LeakagePage() {
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-50"
                       >
                         <Zap className={`size-3 ${fixingId === leak.id ? "animate-spin" : ""}`} />
-                        {fixingId === leak.id ? "Fixing..." : "Fix (1-Click)"}
+                        {fixingId === leak.id ? "Resolving..." : "Resolve"}
                       </button>
                     )}
                   </div>
