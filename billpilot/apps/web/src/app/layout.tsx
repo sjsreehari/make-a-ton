@@ -1,0 +1,22 @@
+import type { Metadata } from 'next';
+import './globals.css';
+
+export const metadata: Metadata = {
+  title: 'BillPilot — Subscription & Billing Management',
+  description: 'Automated subscription billing, invoicing, payments, and dunning engine.',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body className="antialiased min-h-screen bg-slate-50 dark:bg-slate-950">
+        {children}
+      </body>
+    </html>
+  );
+}
+
