@@ -17,8 +17,10 @@ export class AiSessionService {
 
   async getSessionHistory(sessionId: string): Promise<ChatTurn[]> {
     try {
-      const data = await this.redis.get(`ai:session:${sessionId}`);
-      return data ? JSON.parse(data) : [];
+      const data = await this.redis.get<string | ChatTurn[]>(`ai:session:${sessionId}`);
+      if (!data) return [];
+      if (Array.isArray(data)) return data;
+      return typeof data === 'string' ? JSON.parse(data) : [];
     } catch {
       return this.memoryFallback.get(sessionId) || [];
     }
@@ -49,4 +51,3 @@ export class AiSessionService {
     }
   }
 }
-

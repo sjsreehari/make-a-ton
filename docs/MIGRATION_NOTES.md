@@ -7,22 +7,22 @@ Search query: `redis|bullmq|ioredis|@nestjs/bullmq|InjectQueue|Processor|new Que
 
 | Location | Content / Context | Decision | Status |
 |---|---|---|---|
-| `.env.example:5-6` | `REDIS_URL=redis://localhost:6379` | **Remove** (No external Redis required) | [ ] |
-| `apps/api/package.json:19` | `"@nestjs/bullmq": "^12.0.0"` | **Remove** dependency | [ ] |
-| `apps/api/package.json:32` | `"bullmq": "^5.16.0"` | **Remove** dependency | [ ] |
-| `apps/api/package.json:36` | `"ioredis": "^5.4.1"` | **Remove** dependency | [ ] |
-| `apps/api/src/app.module.ts:7,10,69,74` | `BullModule.forRootAsync`, `RedisModule` imports | **Remove** BullModule and RedisModule | [ ] |
-| `apps/api/src/common/events/event-bus.module.ts:2` | BullModule queue registration | **Remove** BullModule queue registration | [ ] |
-| `apps/api/src/common/events/event-bus.service.ts:3,4,13,23` | `@InjectQueue(DOMAIN_EVENTS_QUEUE)`, `Queue`, `this.queue.add` | **Rewrite** to use JobQueueService / EventEmitter2 | [ ] |
-| `apps/api/src/common/redis/cache.service.ts` | Redis-backed CacheService | **Rewrite** into in-process `TtlCacheService` | [ ] |
-| `apps/api/src/common/redis/redis.constants.ts` | `REDIS_CLIENT` token | **Remove** | [ ] |
-| `apps/api/src/common/redis/redis.module.ts` | RedisModule provider setup | **Remove** / Replace with `CacheModule` | [ ] |
-| `apps/api/src/common/redis/redis.service.ts` | `RedisService` client wrapper | **Remove** | [ ] |
-| `apps/api/src/modules/health/health.controller.ts:17-31` | Health check verifying Redis connectivity | **Rewrite** to check MySQL only; report status: 'ok' | [ ] |
-| `apps/api/src/modules/notifications/notifications.service.ts:3,39` | CacheService dedupeKey check | **Rewrite** to use Job dedupeKey / in-process cache | [ ] |
-| `apps/api/src/modules/reports/reports.service.ts:5` | CacheService for dashboard reports | **Rewrite** to use in-process `TtlCacheService` | [ ] |
-| `apps/api/src/modules/whatsapp/phone.service.ts:3,58` | CacheService for phone verification OTP | **Rewrite** to use in-process `TtlCacheService` | [ ] |
-| `docker-compose.yml:20-27` | `redis:7` container service definition | **Remove** | [ ] |
+| `.env.example:5-6` | `REDIS_URL=redis://localhost:6379` | **Remove** (No external Redis required) | [x] |
+| `apps/api/package.json:19` | `"@nestjs/bullmq": "^12.0.0"` | **Remove** dependency | [x] |
+| `apps/api/package.json:32` | `"bullmq": "^5.16.0"` | **Remove** dependency | [x] |
+| `apps/api/package.json:36` | `"ioredis": "^5.4.1"` | **Remove** dependency | [x] |
+| `apps/api/src/app.module.ts:7,10,69,74` | `BullModule.forRootAsync`, `RedisModule` imports | **Remove** BullModule and RedisModule | [x] |
+| `apps/api/src/common/events/event-bus.module.ts:2` | BullModule queue registration | **Remove** BullModule queue registration | [x] |
+| `apps/api/src/common/events/event-bus.service.ts:3,4,13,23` | `@InjectQueue(DOMAIN_EVENTS_QUEUE)`, `Queue`, `this.queue.add` | **Rewrite** to use JobQueueService / EventEmitter2 | [x] |
+| `apps/api/src/common/redis/cache.service.ts` | Redis-backed CacheService | **Rewrite** into in-process `TtlCacheService` | [x] |
+| `apps/api/src/common/redis/redis.constants.ts` | `REDIS_CLIENT` token | **Remove** / alias | [x] |
+| `apps/api/src/common/redis/redis.module.ts` | RedisModule provider setup | **Remove** / Replace with in-process cache | [x] |
+| `apps/api/src/common/redis/redis.service.ts` | `RedisService` client wrapper | **Rewrite** into in-process `TtlCacheService` | [x] |
+| `apps/api/src/modules/health/health.controller.ts:17-31` | Health check verifying Redis connectivity | **Rewrite** to check MySQL only; report status: 'ok' | [x] |
+| `apps/api/src/modules/notifications/notifications.service.ts:3,39` | CacheService dedupeKey check | **Rewrite** to use Job dedupeKey / in-process cache | [x] |
+| `apps/api/src/modules/reports/reports.service.ts:5` | CacheService for dashboard reports | **Rewrite** to use in-process `TtlCacheService` | [x] |
+| `apps/api/src/modules/whatsapp/phone.service.ts:3,58` | CacheService for phone verification OTP | **Rewrite** to use in-process `TtlCacheService` | [x] |
+| `docker-compose.yml:20-27` | `redis:7` container service definition | **Remove** | [x] |
 | `packages/shared/src/events.ts:1` | Comment referring to BullMQ job names | **Rewrite** documentation comment | [ ] |
 | `scripts/verify-all-modules.ts:314` | Health verification checking Redis service | **Rewrite** to verify MySQL service | [ ] |
 | `apps/web/src/app/enterprise/page.tsx:135,138,195` | Marketing mentions of BullMQ and Redis | **Rewrite** copy | [ ] |

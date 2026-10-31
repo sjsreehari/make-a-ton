@@ -4,9 +4,10 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
-import { BullModule } from '@nestjs/bullmq';
 
 import { PrismaModule } from './common/prisma/prisma.module';
+import { TtlCacheModule } from './common/cache/ttl-cache.module';
+import { JobQueueModule } from './common/jobs/job-queue.module';
 import { RedisModule } from './common/redis/redis.module';
 import { EventBusModule } from './common/events/event-bus.module';
 import { CommonAuditModule } from './common/audit/audit.module';
@@ -61,16 +62,9 @@ import { DevController } from './modules/dev/dev.controller';
     }),
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
-    BullModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        connection: {
-          url: config.get<string>('REDIS_URL', 'redis://localhost:6379'),
-        },
-      }),
-    }),
     PrismaModule,
+    TtlCacheModule,
+    JobQueueModule,
     RedisModule,
     EventBusModule,
     CommonAuditModule,
@@ -111,4 +105,3 @@ import { DevController } from './modules/dev/dev.controller';
   ],
 })
 export class AppModule {}
-
