@@ -126,10 +126,21 @@ export interface Customer {
 }
 
 // Client helper that automatically ensures valid Bearer token for local developer convenience
-async function getAuthHeader(): Promise<string | null> {
+function isAccessTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return typeof payload.exp !== 'number' || payload.exp * 1000 <= Date.now() + 30_000;
+  } catch {
+    return true;
+  }
+}
+
+async function getAuthHeader(forceLogin = false): Promise<string | null> {
   if (typeof window === "undefined") return null;
-  let token = localStorage.getItem("billpilot_token");
+  let token = forceLogin ? null : localStorage.getItem("billpilot_token");
+  if (token && isAccessTokenExpired(token)) token = null;
   if (!token) {
+    localStorage.removeItem("billpilot_token");
     try {
       const res = await fetch("/api/v1/auth/login", {
         method: "POST",
@@ -139,7 +150,10 @@ async function getAuthHeader(): Promise<string | null> {
       if (res.ok) {
         const data = await res.json();
         token = data.accessToken;
-        if (token) localStorage.setItem("billpilot_token", token);
+        if (token) {
+          localStorage.setItem("billpilot_token", token);
+          localStorage.setItem("billpilot_user", JSON.stringify(data.user));
+        }
       }
     } catch {
       // fallback
@@ -148,18 +162,25 @@ async function getAuthHeader(): Promise<string | null> {
   return token ? `Bearer ${token}` : null;
 }
 
-async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const auth = await getAuthHeader();
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...(auth ? { Authorization: auth } : {}),
-    ...(options.headers as Record<string, string>),
-  };
-
-  const res = await fetch(`/api/v1${endpoint}`, {
+async function authenticatedFetch(endpoint: string, options: RequestInit = {}): Promise<Response> {
+  const send = async (auth: string | null) => fetch(`/api/v1${endpoint}`, {
     ...options,
-    headers,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers as Record<string, string>),
+      ...(auth ? { Authorization: auth } : {}),
+    },
   });
+
+  let response = await send(await getAuthHeader());
+  if (response.status === 401 && !endpoint.startsWith('/auth/login') && !endpoint.startsWith('/auth/signup')) {
+    response = await send(await getAuthHeader(true));
+  }
+  return response;
+}
+
+async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const res = await authenticatedFetch(endpoint, options);
 
   if (!res.ok) {
     const errorBody = await res.json().catch(() => ({}));
@@ -170,6 +191,14 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 }
 
 export const api = {
+  ai: {
+    chat(body: { message: string; currentRoute: string; sessionId: string }) {
+      return authenticatedFetch('/ai/chat', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+    },
+  },
   auth: {
     async me() {
       return request<{ user: any }>("/auth/me");

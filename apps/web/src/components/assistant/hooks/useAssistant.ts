@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { MascotState } from '../mascot/Mascot';
+import { api } from '@/lib/api';
 
 export interface ChatMessage {
   id: string;
@@ -34,12 +35,7 @@ export function useAssistant() {
     setMessages(prev => [...prev, { id: assistantId, sender: 'assistant', text: '' }]);
 
     try {
-      const token = localStorage.getItem('billpilot_token');
-      const response = await fetch('/api/v1/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ message: content, currentRoute: window.location.pathname, sessionId }),
-      });
+      const response = await api.ai.chat({ message: content, currentRoute: window.location.pathname, sessionId });
       if (!response.ok || !response.body) throw new Error(`Assistant request failed (${response.status})`);
       const reader = response.body.getReader();
       const decoder = new TextDecoder();

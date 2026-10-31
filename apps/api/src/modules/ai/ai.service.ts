@@ -9,6 +9,7 @@ import { AiSessionService } from './session/session.service';
 import { CommonAuditService } from '../../common/audit/audit.service';
 import { Role } from '@billpilot/shared';
 import { buildSystemPrompt } from './llm/prompts';
+import { generateDeterministicTemplate } from './guard/template-fallback';
 
 @Injectable()
 export class AiService {
@@ -29,6 +30,7 @@ export class AiService {
     // Asynchronously process the chat turn and push SSE events
     (async () => {
       try {
+        await Promise.resolve();
         subject.next({ data: { type: 'state', value: 'thinking' } });
 
         // 1. Check offline intent shortcuts first
@@ -127,6 +129,33 @@ export class AiService {
         subject.complete();
       } catch (err: any) {
         this.logger.error(`Error processing chat: ${err.message}`, err.stack);
+        const fallbackIntent = this.intentMatcher.matchOfflineIntent(dto.message, user.role);
+        if (fallbackIntent.kind === 'analytics' && fallbackIntent.toolName) {
+          try {
+            const toolResult = await this.toolRegistry.executeTool(
+              fallbackIntent.toolName,
+              fallbackIntent.args || {},
+              user,
+            );
+            subject.next({ data: { type: 'state', value: 'talking' } });
+            subject.next({ data: { type: 'basis', basis: toolResult.basis as any } });
+            subject.next({
+              data: {
+                type: 'text',
+                delta: generateDeterministicTemplate(
+                  fallbackIntent.toolName,
+                  toolResult as unknown as Record<string, unknown>,
+                ),
+              },
+            });
+            subject.next({ data: { type: 'state', value: 'idle' } });
+            subject.next({ data: { type: 'done' } });
+            subject.complete();
+            return;
+          } catch (fallbackError: any) {
+            this.logger.warn(`Offline finance fallback failed: ${fallbackError.message}`);
+          }
+        }
         subject.next({ data: { type: 'state', value: 'oops' } });
         subject.next({ data: { type: 'text', delta: 'Sorry, I encountered an issue processing your request.' } });
         subject.next({ data: { type: 'state', value: 'idle' } });

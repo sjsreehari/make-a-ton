@@ -11,8 +11,8 @@ export class LlmClient implements ILlmClient {
 
   constructor(private readonly config: ConfigService) {
     this.apiKey = this.config.get<string>('GEMINI_API_KEY');
-    this.modelName = this.config.get<string>('GEMINI_MODEL', 'gemini-2.5-flash');
-    this.timeoutMs = Number(this.config.get<string>('GEMINI_TIMEOUT_MS', '15000'));
+    this.modelName = this.config.get<string>('GEMINI_MODEL', 'gemini-3.8-flash');
+    this.timeoutMs = Number(this.config.get<string>('GEMINI_TIMEOUT_MS', '45000'));
   }
 
   isAvailable(): boolean {
@@ -34,24 +34,30 @@ export class LlmClient implements ILlmClient {
         })),
         { role: 'user', parts: [{ text: options.message }] },
       ];
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(this.modelName)}:generateContent?key=${encodeURIComponent(this.apiKey!)}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: options.system }] },
-            contents,
-            generationConfig: { temperature: 0.2, responseMimeType: 'application/json' },
-          }),
-          signal: controller.signal,
-        },
-      );
-      if (!response.ok) {
-        const detail = await response.text();
-        this.logger.error(`Gemini request failed (${response.status}): ${detail.slice(0, 500)}`);
-        throw new Error(`Gemini request failed (${response.status})`);
+      let response: Response | undefined;
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(this.modelName)}:generateContent?key=${encodeURIComponent(this.apiKey!)}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: options.system }] },
+              contents,
+              generationConfig: { responseMimeType: 'application/json' },
+            }),
+            signal: controller.signal,
+          },
+        );
+        if (response.ok) break;
+        if (![429, 500, 502, 503, 504].includes(response.status) || attempt === 2) {
+          const detail = await response.text();
+          this.logger.error(`Gemini request failed (${response.status}): ${detail.slice(0, 500)}`);
+          throw new Error(`Gemini request failed (${response.status})`);
+        }
+        await new Promise((resolve) => setTimeout(resolve, 400 * (attempt + 1)));
       }
+      if (!response?.ok) throw new Error('Gemini request failed');
       const payload = await response.json() as {
         candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
       };
