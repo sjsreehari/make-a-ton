@@ -11,8 +11,8 @@ const suggestions = [
 ];
 
 const answers: Record<string, string> = {
-  [suggestions[0]]: "Open Invoices and filter by status “Overdue” to see each customer, due date, and outstanding balance. This demo assistant does not read live account data.",
-  [suggestions[1]]: "Monthly recurring revenue (MRR) is the normalized monthly value of active recurring subscriptions. Open Insights → MRR for the current account total and trend. This demo assistant does not read live account data.",
+  [suggestions[0]]: "Open Invoices and filter by status “Overdue” to review each customer, due date, and outstanding balance.",
+  [suggestions[1]]: "Monthly recurring revenue (MRR) is the normalized monthly value of active recurring subscriptions. View the current total and trend on the dashboard.",
   [suggestions[2]]: "Receivables aging groups unpaid invoices by how long they have been outstanding (for example, current, 1–30, 31–60, and 60+ days). Review the Invoices page and its aging report for account-specific balances.",
   [suggestions[3]]: "A useful three-month forecast starts with current active recurring revenue, then accounts for expected renewals, cancellations, and known new subscriptions. Open Insights to review your account’s current MRR trend before forecasting.",
 };
@@ -31,7 +31,7 @@ export default function AiAssistantPage() {
     const match = suggestions.find((item) => item.toLocaleLowerCase().replace(/[?.!]/g, "").trim() === normalized);
     const answer = match
       ? answers[match]
-      : "I’m a demo assistant with preset answers. Try one of the suggested questions below, or type it here to get its answer.";
+      : "Try one of the suggested questions to get a quick answer.";
     setMessages((current) => [...current, { id: Date.now(), sender: "user", text: question }, { id: Date.now() + 1, sender: "assistant", text: answer }]);
     setPrompt("");
   };

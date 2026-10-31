@@ -169,7 +169,7 @@ export default function DashboardPage() {
             {loading ? "—" : mrrMetrics.activeCount}
           </div>
           <div className="mt-1 flex items-center gap-1 text-[11px] text-emerald-400">
-            <span>Active subscriptions</span>
+            <span>Current subscriptions</span>
           </div>
         </div>
 
@@ -208,7 +208,7 @@ export default function DashboardPage() {
             {loading ? "—" : `₹${recentInvoices.filter(i => i.status === "OVERDUE").reduce((acc, curr) => acc + Number(curr.amountDue || 0), 0).toLocaleString("en-IN")}`}
           </div>
           <div className="mt-1 flex items-center gap-1 text-[11px] text-amber-400/80">
-            <span>Overdue invoices</span>
+            <span>Across the 5 latest invoices</span>
           </div>
         </div>
 
