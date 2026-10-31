@@ -16,6 +16,9 @@
     "db:studio": "prisma studio --schema=prisma/schema",
     "perf:check": "tsx scripts/perf-check.ts"
   },
+  "dependencies": {
+    "@prisma/client": "^5.22.0"
+  },
   "devDependencies": {
     "@types/node": "^20.17.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
@@ -31,9 +34,6 @@
     "apps/*",
     "packages/*"
   ],
-  "dependencies": {
-    "@prisma/client": "^5.22.0"
-  },
   "pnpm": {
     "onlyBuiltDependencies": [
       "@nestjs/core",
