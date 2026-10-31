@@ -1,5 +1,4 @@
-# BillPilot
-
+# SmartBill
 **"We removed every manual step in the billing month."**
 
 BillPilot is a Subscription Management System for the fictional company **Brightloop Software**. It covers the full recurring-revenue lifecycle in one platform:
