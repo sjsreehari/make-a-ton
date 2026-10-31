@@ -55,3 +55,4 @@
 /apps/web/src/app/(staff)/assistant/ @person-d
 /apps/web/src/app/(portal)/my/savings/ @person-d
 /prisma/schema/d_insights.prisma    @person-d
+
