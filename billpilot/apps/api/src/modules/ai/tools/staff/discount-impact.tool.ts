@@ -22,3 +22,4 @@ export class DiscountImpactTool implements ITool {
     };
   }
 }
+

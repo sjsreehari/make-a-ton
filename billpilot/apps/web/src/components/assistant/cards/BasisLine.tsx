@@ -22,3 +22,4 @@ export const BasisLine: React.FC<BasisProps> = ({ basis }) => {
     </div>
   );
 };
+

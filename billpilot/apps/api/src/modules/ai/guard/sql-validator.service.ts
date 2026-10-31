@@ -64,3 +64,4 @@ export class SqlValidatorService {
     return singleQuery.replace(/limit\s+\d+/i, 'LIMIT 200');
   }
 }
+

@@ -32,3 +32,4 @@ export const Highlighter: React.FC<HighlighterProps> = ({ targetId, onDismiss })
     />
   );
 };
+

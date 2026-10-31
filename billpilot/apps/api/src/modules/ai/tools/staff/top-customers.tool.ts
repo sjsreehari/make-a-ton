@@ -19,3 +19,4 @@ export class TopCustomersTool implements ITool {
     };
   }
 }
+

@@ -38,3 +38,4 @@ export const SuggestionChips: React.FC<SuggestionChipsProps> = ({ currentRoute, 
     </div>
   );
 };
+

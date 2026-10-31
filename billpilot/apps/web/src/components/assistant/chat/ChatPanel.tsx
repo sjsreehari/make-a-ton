@@ -56,3 +56,4 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     </div>
   );
 };
+

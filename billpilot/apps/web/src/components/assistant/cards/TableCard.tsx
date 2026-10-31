@@ -61,3 +61,4 @@ export const TableCard: React.FC<TableCardProps> = ({ columns, rows }) => {
     </div>
   );
 };
+

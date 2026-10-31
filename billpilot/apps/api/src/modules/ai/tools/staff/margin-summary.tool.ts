@@ -24,3 +24,4 @@ export class MarginSummaryTool implements ITool {
     };
   }
 }
+

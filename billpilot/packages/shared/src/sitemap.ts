@@ -150,3 +150,4 @@ export const SITEMAP: SitemapEntry[] = [
     roles: [Role.CUSTOMER],
   },
 ];
+

@@ -108,3 +108,4 @@ export class ToolRegistryService {
     return tool.execute(args, user);
   }
 }
+

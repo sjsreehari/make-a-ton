@@ -30,3 +30,4 @@ export const Mascot: React.FC<MascotProps> = ({ state = 'idle', className = '' }
     </div>
   );
 };
+

@@ -18,3 +18,4 @@ The external component interface will remain identical:
 <Mascot state={mascotState} target={currentTargetCoordinates} />
 ```
 All chat, SSE, tool, and tour logic is completely decoupled from the mascot rendering.
+

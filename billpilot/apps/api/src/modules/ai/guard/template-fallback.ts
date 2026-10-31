@@ -18,3 +18,4 @@ export function generateDeterministicTemplate(toolName: string, data: Record<str
       return `Here are the verified records from the database as of ${data.basis ? (data.basis as any).asOf : 'today'}.`;
   }
 }
+

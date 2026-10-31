@@ -22,3 +22,4 @@ export class TaxSummaryTool implements ITool {
     };
   }
 }
+

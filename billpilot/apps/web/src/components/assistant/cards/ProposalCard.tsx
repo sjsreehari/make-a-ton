@@ -71,3 +71,4 @@ export const ProposalCard: React.FC<ProposalCardProps> = ({ id, title, summary, 
     </div>
   );
 };
+

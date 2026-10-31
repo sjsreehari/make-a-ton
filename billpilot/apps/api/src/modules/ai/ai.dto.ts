@@ -26,3 +26,4 @@ export interface SseEvent {
   summary?: string;
   basis?: Record<string, unknown>;
 }
+

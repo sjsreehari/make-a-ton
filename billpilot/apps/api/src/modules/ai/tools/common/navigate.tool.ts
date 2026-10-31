@@ -30,3 +30,4 @@ export class NavigateTool implements ITool {
     };
   }
 }
+

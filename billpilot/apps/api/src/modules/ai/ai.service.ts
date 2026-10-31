@@ -109,3 +109,4 @@ export class AiService {
     return { success: true, proposalId, status: 'CANCELLED' };
   }
 }
+

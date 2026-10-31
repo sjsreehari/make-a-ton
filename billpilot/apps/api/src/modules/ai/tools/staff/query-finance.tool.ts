@@ -23,3 +23,4 @@ export class QueryFinanceTool implements ITool {
     };
   }
 }
+

@@ -21,3 +21,4 @@ The following target IDs are referenced in tours (`packages/shared/src/tours.ts`
 ## Mascot Animation Roadmap
 - **Phase 1 (Current)**: Static lightweight CSS-only ball implementing states `idle | listening | thinking | talking | moving | pointing | happy | oops`.
 - **Phase 2 (Future)**: Replace `Mascot.tsx` with Framer Motion animations, SVG artwork, and travel-to-target path coordinates. No changes needed to chat logic.
+

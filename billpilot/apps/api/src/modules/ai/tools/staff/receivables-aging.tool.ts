@@ -26,3 +26,4 @@ export class ReceivablesAgingTool implements ITool {
     };
   }
 }
+

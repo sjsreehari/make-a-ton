@@ -17,3 +17,4 @@ export const ChartCard: React.FC<ChartCardProps> = ({ kind, series }) => {
     </div>
   );
 };
+

@@ -29,3 +29,4 @@ export class HighlightTool implements ITool {
     };
   }
 }
+

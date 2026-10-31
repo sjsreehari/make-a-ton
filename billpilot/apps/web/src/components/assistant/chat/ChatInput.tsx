@@ -36,3 +36,4 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
     </form>
   );
 };
+

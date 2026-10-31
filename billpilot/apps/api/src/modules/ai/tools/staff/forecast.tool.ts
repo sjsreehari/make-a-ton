@@ -37,3 +37,4 @@ export class ForecastTool implements ITool {
     };
   }
 }
+
