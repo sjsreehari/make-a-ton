@@ -185,6 +185,7 @@ model Subscription {
   startDate           DateTime
   expiryDate          DateTime?
   nextBillingDate     DateTime?
+  remainingCycles     Int?
   paymentTerm         PaymentTerm        @default(NET_15)
   isPaused            Boolean            @default(false)
   pausedAt            DateTime?
