@@ -402,7 +402,7 @@ export class ReportsService {
   /**
    * Generates PDF buffer for Customer Account Statement
    */
-  async renderStatementPdf(customerId: string): Promise<Buffer> {
+  async renderStatementPdf(customerId: string, _startDate?: Date, _endDate?: Date): Promise<Buffer> {
     const stmt = await this.getCustomerStatement(customerId);
 
     return new Promise((resolve, reject) => {

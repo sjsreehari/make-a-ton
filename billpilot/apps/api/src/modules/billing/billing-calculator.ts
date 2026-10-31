@@ -234,8 +234,9 @@ export function calculateInvoice(
 
   const subtotal = roundMoney(grossSubtotal);
   const totalTax = roundMoney(totalExclusiveTax.plus(totalInclusiveTax));
+  const linesTotal = calculatedLines.reduce((sum, l) => sum.plus(l.lineTotal), new Decimal(0));
   const finalTotal = roundMoney(
-    Decimal.max(0, subtotal.minus(documentDiscountTotal).plus(totalExclusiveTax)),
+    Decimal.max(0, linesTotal.minus(documentDiscountTotal)),
   );
 
   return {

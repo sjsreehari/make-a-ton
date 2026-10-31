@@ -1,60 +1,60 @@
 # Implementation Tasks & Progress
 
-- [ ] 1. Recurring billing scheduler
-  - [ ] Robust nextBillingDate math (Jan 31 -> Feb 28 -> Mar 31)
-  - [ ] Catch-up of missed periods without double-billing
-  - [ ] Optional number of cycles limit
-  - [ ] Scheduled preview of next 3 invoice dates
-- [ ] 2. Invoice lifecycle and numbering
-  - [ ] Derived PARTIAL and OVERDUE display statuses
-  - [ ] Configurable number pattern (INV-{year}-{seq:6}) in settings
-  - [ ] Locked lines after confirm
-  - [ ] Reverse / cancel rules
-- [ ] 3. Tax handling
-  - [ ] Inclusive vs exclusive tax calculation
-  - [ ] Up to 2 tax rules per line (e.g. CGST + SGST)
-  - [ ] Tax breakdown table on invoice / PDF
-  - [ ] Deterministic rounding
-- [ ] 4. Discounts at line and invoice level
-  - [ ] Clear order of operations (line vs whole document)
-  - [ ] Test matrix covering each combination
-- [ ] 5. Payments, credits and overpayment
-  - [ ] Apply one payment across multiple invoices
-  - [ ] Automatic use of customer credit on next invoice
-  - [ ] Refund record with reason
-  - [ ] Payment-applied history
-- [ ] 6. Quote to invoice conversion
-  - [ ] Quote approval by customer from portal
-  - [ ] Expiry handling
-  - [ ] Conversion carrying lines and terms
-  - [ ] Approval audit entry
-- [ ] 7. Credit notes
-  - [ ] Credit note entity with number and reason
-  - [ ] Auto-reduce amount due
-  - [ ] PDF generation support
-- [ ] 8. Reminder and late-fee schedule
-  - [ ] Configurable schedule table (offset days, template key, optional late fee)
-  - [ ] Late fee added as adjustment line exactly once
-  - [ ] Deduplication to prevent repeat reminder sending
-- [ ] 9. Message templates with variables
-  - [ ] Variable placeholder system
-  - [ ] Template editor with variable picker and live preview
-  - [ ] Validation rejecting unknown variables
-- [ ] 10. Client portal behavior
-  - [ ] Account statement (invoices, payments, balance) as CSV/PDF
-  - [ ] Invoice view tracking ("viewed on <date>")
-  - [ ] Pay-now flow
-- [ ] 11. Activity log
-  - [ ] Rich audit entries (who, what, before/after, source: UI/API/webhook/job)
-  - [ ] Filter by entity and date
-  - [ ] Timeline display on invoice and subscription
-- [ ] 12. Reports and exports
-  - [ ] Aging report (current, 1-30, 31-60, 61-90, 90+)
-  - [ ] Tax summary report
-  - [ ] Payments-by-method report with CSV export (< 2s)
-- [ ] 13. Bulk actions
-  - [ ] Bulk select invoices: confirm, send, cancel, download batch
-  - [ ] Per-item result summary
-- [ ] 14. Invoice PDF design
-  - [ ] Clean layout (header, bill-to, line table, tax breakdown, totals, terms, QR/link, footer)
-  - [ ] Support company logo
+- [x] 1. Recurring billing scheduler
+  - [x] Robust nextBillingDate math (Jan 31 -> Feb 28 -> Mar 31)
+  - [x] Catch-up of missed periods without double-billing
+  - [x] Optional number of cycles limit
+  - [x] Scheduled preview of next 3 invoice dates
+- [x] 2. Invoice lifecycle and numbering
+  - [x] Derived PARTIAL and OVERDUE display statuses
+  - [x] Configurable number pattern (INV-{year}-{seq:6}) in settings
+  - [x] Locked lines after confirm
+  - [x] Reverse / cancel rules
+- [x] 3. Tax handling
+  - [x] Inclusive vs exclusive tax calculation
+  - [x] Up to 2 tax rules per line (e.g. CGST + SGST)
+  - [x] Tax breakdown table on invoice / PDF
+  - [x] Deterministic rounding
+- [x] 4. Discounts at line and invoice level
+  - [x] Clear order of operations (line vs whole document)
+  - [x] Test matrix covering each combination
+- [x] 5. Payments, credits and overpayment
+  - [x] Apply one payment across multiple invoices
+  - [x] Automatic use of customer credit on next invoice
+  - [x] Refund record with reason
+  - [x] Payment-applied history
+- [x] 6. Quote to invoice conversion
+  - [x] Quote approval by customer from portal (one click)
+  - [x] Expiry handling
+  - [x] Conversion carrying lines and terms
+  - [x] Approval audit entry
+- [x] 7. Credit notes
+  - [x] Credit note entity with number and reason
+  - [x] Auto-reduce amount due
+  - [x] PDF generation support
+- [x] 8. Reminder and late-fee schedule
+  - [x] Configurable schedule table (offset days, template key, optional late fee)
+  - [x] Late fee added as adjustment line exactly once
+  - [x] Deduplication to prevent repeat reminder sending
+- [x] 9. Message templates with variables
+  - [x] Variable placeholder system
+  - [x] Template editor with variable picker and live preview
+  - [x] Validation rejecting unknown variables
+- [x] 10. Client portal behavior
+  - [x] Account statement (invoices, payments, balance) as CSV/PDF
+  - [x] Invoice view tracking ("viewed on <date>")
+  - [x] Pay-now flow
+- [x] 11. Activity log
+  - [x] Rich audit entries (who, what, before/after, source: UI/API/webhook/job)
+  - [x] Filter by entity and date
+  - [x] Timeline display on invoice and subscription
+- [x] 12. Reports and exports
+  - [x] Aging report (current, 1-30, 31-60, 61-90, 90+)
+  - [x] Tax summary report
+  - [x] Payments-by-method report with CSV export (< 2s)
+- [x] 13. Bulk actions
+  - [x] Bulk select invoices: confirm, send, cancel, download batch
+  - [x] Per-item result summary
+- [x] 14. Invoice PDF design
+  - [x] Clean layout (header, bill-to, line table, tax breakdown, totals, terms, QR/link, footer)
+  - [x] Support company logo
