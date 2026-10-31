@@ -153,20 +153,6 @@ Default seed: 3 users, 6 plans, 12 products with variants (including brand=Odoo 
 
 ---
 
-## Scripts
-
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Run API (4000) and web (3000) via Turborepo |
-| `pnpm db:generate` | `prisma generate` |
-| `pnpm db:migrate` | `prisma migrate dev` |
-| `pnpm db:seed` | Seed the database (`--scale=5000` for load data) |
-| `pnpm db:reset` | Reset DB and reseed |
-| `pnpm test` | Run all tests |
-| `pnpm lint` | Lint all packages |
-| `pnpm -r typecheck` | Typecheck all packages |
-| `pnpm perf:check` | Hit key endpoints, fail if p95 > 1500 ms |
-
 ---
 
 ## API Overview
