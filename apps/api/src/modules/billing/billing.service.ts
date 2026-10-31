@@ -14,6 +14,7 @@ import { calculateNextBillingDate, previewNextInvoiceDates } from './billing-sch
 import { formatDocumentNumber, deriveInvoiceDisplayStatus } from './invoice-numbering';
 import { calculateInvoice, LineItemInput } from './billing-calculator';
 import { generateInvoicePdfBuffer } from './invoice-pdf.service';
+import { withRetry } from '../../common/concurrency';
 
 export interface BulkActionResult {
   total: number;
@@ -346,11 +347,11 @@ export class BillingService implements IInvoiceService {
             anchorDay,
           );
 
-          const res = await this.generateFromSubscription(
+          const res = await withRetry(() => this.generateFromSubscription(
             sub.id,
             { start: currentStart, end: currentEnd },
             opts,
-          );
+          ));
 
           if ('skipped' in res && res.skipped) {
             skipped++;

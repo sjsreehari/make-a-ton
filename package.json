@@ -10,9 +10,13 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "db:generate": "prisma generate --schema=prisma/schema",
+    "db:push": "prisma db push --schema=prisma/schema",
     "db:migrate": "prisma migrate dev --schema=prisma/schema",
     "db:seed": "tsx prisma/seed/index.ts",
+    "db:seed:demo": "tsx prisma/seed/seed-demo.ts",
     "db:reset": "prisma migrate reset --force --schema=prisma/schema && pnpm db:seed",
+    "db:verify": "tsx prisma/seed/verify-demo.ts",
+    "db:ai-grants": "tsx scripts/apply-ai-grants.ts",
     "db:studio": "prisma studio --schema=prisma/schema",
     "perf:check": "tsx scripts/perf-check.ts"
   },
