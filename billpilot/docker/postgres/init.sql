@@ -10,3 +10,4 @@ $$;
 -- Grant connect
 GRANT CONNECT ON DATABASE billpilot TO billpilot_ro;
 GRANT USAGE ON SCHEMA public TO billpilot_ro;
+
