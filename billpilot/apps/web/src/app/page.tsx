@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { MarketingNavbar } from "@/components/marketing/Navbar";
+import { MarketingFooter } from "@/components/marketing/Footer";
 import {
   Zap,
   ArrowRight,
