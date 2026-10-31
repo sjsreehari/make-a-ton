@@ -92,7 +92,7 @@ export default function QuotesPage() {
         customerId: customer.id,
         planId: matchedPlan.id,
         startDate: new Date().toISOString(),
-        paymentTermsDays: 15,
+        paymentTerm: "NET_15",
         lines: [
           {
             productId: product.id,

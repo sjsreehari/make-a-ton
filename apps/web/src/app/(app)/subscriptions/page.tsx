@@ -158,7 +158,7 @@ export default function SubscriptionsPage() {
         customerId,
         planId: newPlanId,
         startDate: new Date().toISOString(),
-        paymentTermsDays: 15,
+        paymentTerm: "NET_15",
         lines: [
           {
             productId,

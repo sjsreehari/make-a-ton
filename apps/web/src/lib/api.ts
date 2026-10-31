@@ -30,7 +30,7 @@ export interface Subscription {
   id: string;
   number: string;
   customerId: string;
-  customer?: { id: string; name: string; email: string; company?: string };
+  customer?: { id: string; name: string; email: string; company?: string; phone?: string };
   planId: string;
   plan?: Plan;
   status: "DRAFT" | "QUOTATION" | "CONFIRMED" | "ACTIVE" | "PAUSED" | "CLOSED";
@@ -88,7 +88,7 @@ export interface Discount {
   id: string;
   code: string;
   name: string;
-  type: "PERCENTAGE" | "FIXED_AMOUNT";
+  type: "PERCENTAGE" | "FIXED_AMOUNT" | "FIXED";
   value: string;
   scope: string;
   startsAt: string;
@@ -216,13 +216,33 @@ export const api = {
     async create(dto: {
       customerId: string;
       planId: string;
-      startDate: string;
-      paymentTermsDays?: number;
-      lines: Array<{ productId: string; variantId?: string; quantity: number }>;
+      startDate?: string;
+      expiryDate?: string;
+      paymentTerm?: string;
+      lines: Array<{
+        productId: string;
+        variantId?: string;
+        description?: string;
+        quantity: number;
+        unitPrice?: string | number;
+      }>;
     }) {
       return request<Subscription>("/subscriptions", {
         method: "POST",
-        body: JSON.stringify(dto),
+        body: JSON.stringify({
+          customerId: dto.customerId,
+          planId: dto.planId,
+          startDate: dto.startDate || new Date().toISOString(),
+          expiryDate: dto.expiryDate,
+          paymentTerm: dto.paymentTerm || "NET_15",
+          lines: dto.lines.map((l) => ({
+            productId: l.productId,
+            variantId: l.variantId,
+            description: l.description || "Subscription Line Item",
+            quantity: l.quantity,
+            unitPrice: Number(l.unitPrice || 2499).toFixed(2),
+          })),
+        }),
       });
     },
     async pause(id: string) {
@@ -300,7 +320,7 @@ export const api = {
     async createPlan(dto: {
       name: string;
       price: string | number;
-      billingPeriod: string;
+      billingPeriod: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
       minQuantity?: number;
       autoClose?: boolean;
       closable?: boolean;
@@ -309,7 +329,10 @@ export const api = {
     }) {
       return request<Plan>("/plans", {
         method: "POST",
-        body: JSON.stringify(dto),
+        body: JSON.stringify({
+          ...dto,
+          price: Number(dto.price).toFixed(2),
+        }),
       });
     },
     async deletePlan(id: string) {
@@ -330,7 +353,11 @@ export const api = {
     }) {
       return request<Product>("/products", {
         method: "POST",
-        body: JSON.stringify(dto),
+        body: JSON.stringify({
+          ...dto,
+          salesPrice: Number(dto.salesPrice).toFixed(2),
+          costPrice: Number(dto.costPrice).toFixed(2),
+        }),
       });
     },
     async deleteProduct(id: string) {
@@ -344,7 +371,10 @@ export const api = {
     }) {
       return request<any>("/products/variants", {
         method: "POST",
-        body: JSON.stringify(dto),
+        body: JSON.stringify({
+          ...dto,
+          extraPrice: Number(dto.extraPrice).toFixed(2),
+        }),
       });
     },
   },
@@ -353,10 +383,13 @@ export const api = {
     async list() {
       return request<{ data: TaxRule[]; meta: any }>("/tax-rules");
     },
-    async create(dto: { name: string; ratePercent: number; region: string; isInclusive?: boolean }) {
+    async create(dto: { name: string; ratePercent: number | string; region?: string; isInclusive?: boolean }) {
       return request<TaxRule>("/tax-rules", {
         method: "POST",
-        body: JSON.stringify(dto),
+        body: JSON.stringify({
+          ...dto,
+          ratePercent: Number(dto.ratePercent).toFixed(2),
+        }),
       });
     },
     async delete(id: string) {
@@ -371,16 +404,22 @@ export const api = {
     async create(dto: {
       code: string;
       name: string;
-      type: "PERCENTAGE" | "FIXED_AMOUNT";
-      value: number;
+      type: "PERCENTAGE" | "FIXED_AMOUNT" | "FIXED";
+      value: number | string;
       scope: "SUBSCRIPTION" | "PRODUCT";
       startsAt: string;
       endsAt: string;
       usageLimit?: number;
+      productIds?: string[];
     }) {
       return request<Discount>("/discounts", {
         method: "POST",
-        body: JSON.stringify(dto),
+        body: JSON.stringify({
+          ...dto,
+          type: dto.type === "FIXED_AMOUNT" ? "FIXED" : dto.type,
+          value: Number(dto.value).toFixed(2),
+          productIds: dto.productIds || [],
+        }),
       });
     },
     async delete(id: string) {
@@ -476,7 +515,7 @@ export const api = {
       });
     },
     async deleteCustomer(id: string) {
-      return request<{ success: boolean }>(`/users/customers/${id}`, { method: "DELETE" });
+      return request<{ success: boolean; message?: string }>(`/users/customers/${id}`, { method: "DELETE" });
     },
   },
 
