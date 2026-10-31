@@ -273,20 +273,7 @@ Target: p95 under 2 seconds on every page and endpoint with 5,000+ subscriptions
 
 ---
 
-## Docs Index
 
-| File | Contents |
-|------|----------|
-| `PROJECT.txt` | Full project bible: vision, requirements, rules, test plan, glossary |
-| `docs/ARCHITECTURE.md` | System architecture |
-| `docs/DECISIONS.md` | Design decisions (e.g. pause as a flag, not a status) |
-| `docs/API_CONVENTIONS.md` | API contract conventions |
-| `docs/EVENTS.md` | Domain events, producers and consumers |
-| `docs/DEMO_SCRIPT.md` | The 5-minute live demo |
-| `docs/RISKS.md` | Risks and mitigations |
-| `docs/TASKS_A.md` - `TASKS_D.md` | Per-owner hour-by-hour tasks |
-
----
 
 ## Troubleshooting
 
