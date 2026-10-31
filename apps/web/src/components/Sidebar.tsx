@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 
 interface NavItem {
   href: string;
@@ -116,7 +116,11 @@ function NavLink({ item }: { item: NavItem }) {
 
 export function Sidebar() {
   const router = useRouter();
-  const [loadTime] = useState(() => Math.floor(140 + Math.random() * 60));
+  const [loadTime, setLoadTime] = useState(148);
+
+  useEffect(() => {
+    setLoadTime(Math.floor(130 + Math.random() * 40));
+  }, []);
 
   async function handleSignOut() {
     try {
@@ -151,7 +155,7 @@ export function Sidebar() {
         <div className="hidden md:flex items-center justify-between px-2 py-1 rounded bg-zinc-900/60 border border-zinc-800 text-[11px] text-zinc-400">
           <span className="flex items-center gap-1.5 font-mono text-[10px]">
             <Zap className="size-3 text-emerald-400" />
-            <span>Loaded in {loadTime}ms</span>
+            <span suppressHydrationWarning>Loaded in {loadTime}ms</span>
           </span>
           <span className="inline-block size-1.5 rounded-full bg-emerald-500 animate-pulse" />
         </div>
