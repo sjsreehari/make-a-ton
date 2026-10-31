@@ -490,7 +490,7 @@ export const api = {
       return request<{
         totalAmountAtRisk: number;
         totalFindings: number;
-        byKind: Record<string, { count: number; amount: number }>;
+        byKind?: Record<string, { count: number; amount: number }>;
         findings: LeakageFinding[];
       }>("/insights/leakage");
     },
@@ -498,6 +498,7 @@ export const api = {
       return request<{
         totalAmountAtRisk: number;
         totalFindings: number;
+        byKind?: Record<string, { count: number; amount: number }>;
         findings: LeakageFinding[];
       }>("/insights/leakage/scan", { method: "POST" });
     },

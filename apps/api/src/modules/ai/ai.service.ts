@@ -45,19 +45,30 @@ export class AiService {
           return;
         }
 
+        // Use verified local reports for common finance questions. This keeps core
+        // account queries responsive even when Gemini is slow or temporarily unavailable.
+        if (matched.kind === 'analytics' && matched.toolName) {
+          const toolResult = await this.toolRegistry.executeTool(matched.toolName, matched.args || {}, user);
+          const answer = generateDeterministicTemplate(
+            matched.toolName,
+            toolResult as unknown as Record<string, unknown>,
+          );
+          await this.sessionService.appendTurn(dto.sessionId, { role: 'user', content: dto.message, timestamp: new Date().toISOString() });
+          await this.sessionService.appendTurn(dto.sessionId, { role: 'model', content: answer, timestamp: new Date().toISOString() });
+          subject.next({ data: { type: 'state', value: 'talking' } });
+          subject.next({ data: { type: 'basis', basis: toolResult.basis as any } });
+          if (Array.isArray(toolResult.data)) {
+            subject.next({ data: { type: 'table', columns: Object.keys((toolResult.data[0] || {}) as object), rows: toolResult.data as Record<string, unknown>[] } });
+          }
+          subject.next({ data: { type: 'text', delta: answer } });
+          subject.next({ data: { type: 'state', value: 'idle' } });
+          subject.next({ data: { type: 'done' } });
+          subject.complete();
+          return;
+        }
+
         // 2. Check if LLM is available, otherwise run offline tool fallback or guidance
         if (!this.llmClient.isAvailable()) {
-          if (matched.kind === 'analytics' && matched.toolName) {
-            const toolResult = await this.toolRegistry.executeTool(matched.toolName, matched.args || {}, user);
-            subject.next({ data: { type: 'state', value: 'talking' } });
-            subject.next({ data: { type: 'basis', basis: toolResult.basis as any } });
-            subject.next({ data: { type: 'text', delta: `Here is the current ${matched.toolName.replace(/_/g, ' ')}:` } });
-            subject.next({ data: { type: 'state', value: 'idle' } });
-            subject.next({ data: { type: 'done' } });
-            subject.complete();
-            return;
-          }
-
           subject.next({ data: { type: 'state', value: 'talking' } });
           subject.next({
             data: {

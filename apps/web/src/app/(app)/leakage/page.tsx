@@ -22,7 +22,10 @@ export default function LeakagePage() {
   const fetchLeakage = async () => {
     try {
       setLoading(true);
-      const res = await api.insights.leakage();
+      let res = await api.insights.leakage();
+      if (!res.findings || res.findings.length === 0) {
+        res = await api.insights.scanLeakage();
+      }
       setFindings(res.findings || []);
       setTotalAtRisk(res.totalAmountAtRisk || 0);
     } catch (err: any) {
