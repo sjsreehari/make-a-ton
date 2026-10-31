@@ -77,3 +77,4 @@ export type DomainEventPayloadMap = {
   'discount.exhausted': { discountId: string; code: string };
   'billing.run.completed': BillingRunEvent;
 };
+

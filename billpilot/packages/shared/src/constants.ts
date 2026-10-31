@@ -21,3 +21,4 @@ export const PAYMENT_TERM_DAYS: Record<string, number> = {
   NET_30: 30,
   NET_60: 60,
 };
+

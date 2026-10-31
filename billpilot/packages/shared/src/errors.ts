@@ -67,3 +67,4 @@ export class NotImplementedError extends AppError {
     super(ErrorCode.NOT_IMPLEMENTED, `${feature} is not yet implemented`, undefined, 501);
   }
 }
+
