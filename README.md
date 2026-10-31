@@ -52,26 +52,6 @@ Built for a 7-hour hackathon by four teammates working in parallel on four branc
 If time slips, Tier 3 is cut first, then Tier 2. Never Tier 1 or the core requirements.
 
 ---
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Monorepo | pnpm workspaces + Turborepo |
-| Frontend | Next.js 14+ (App Router), TypeScript, Tailwind, shadcn/ui, TanStack Query, React Hook Form + zod, Recharts, next-themes |
-| Backend | Node 20, NestJS 10, TypeScript, zod validation |
-| Database | PostgreSQL 16 + Prisma (multi-file schema) |
-| Queue / Schedule | Redis 7, BullMQ, @nestjs/schedule |
-| Auth | JWT (access 15m, refresh 7d httpOnly cookie), argon2 |
-| PDF | pdfkit |
-| Email | nodemailer to Mailhog |
-| WhatsApp | Twilio WhatsApp Sandbox |
-| Payments | Razorpay (test mode) |
-| AI | Anthropic Claude API |
-| Testing | Vitest, Supertest, Playwright |
-
----
-
 ## Repository Layout
 
 ```
