@@ -1,0 +1,129 @@
+[
+  {
+    "id": "product-odoo-base",
+    "name": "Odoo Base License",
+    "type": "SOFTWARE",
+    "salesPrice": "4999.00",
+    "costPrice": "2000.00",
+    "taxRuleId": "taxrule-gst-18",
+    "notes": "Base core system",
+    "variants": [
+      {
+        "attribute": "brand",
+        "value": "Odoo",
+        "extraPrice": "560.00"
+      }
+    ]
+  },
+  {
+    "id": "product-odoo-erp",
+    "name": "Odoo ERP Module",
+    "type": "SOFTWARE",
+    "salesPrice": "2999.00",
+    "costPrice": "1000.00",
+    "taxRuleId": "taxrule-gst-18",
+    "variants": [
+      {
+        "attribute": "brand",
+        "value": "Odoo",
+        "extraPrice": "560.00"
+      }
+    ]
+  },
+  {
+    "id": "product-support-basic",
+    "name": "Basic Support",
+    "type": "SUPPORT",
+    "salesPrice": "999.00",
+    "costPrice": "300.00",
+    "taxRuleId": "taxrule-gst-18",
+    "variants": []
+  },
+  {
+    "id": "product-support-premium",
+    "name": "Premium Support",
+    "type": "SUPPORT",
+    "salesPrice": "2999.00",
+    "costPrice": "800.00",
+    "taxRuleId": "taxrule-gst-18",
+    "variants": [
+      {
+        "attribute": "tier",
+        "value": "Gold",
+        "extraPrice": "1000.00"
+      }
+    ]
+  },
+  {
+    "id": "product-hosting",
+    "name": "Cloud Hosting",
+    "type": "SERVICE",
+    "salesPrice": "1499.00",
+    "costPrice": "400.00",
+    "taxRuleId": "taxrule-gst-18",
+    "variants": []
+  },
+  {
+    "id": "product-training",
+    "name": "Training Module",
+    "type": "SERVICE",
+    "salesPrice": "4999.00",
+    "costPrice": "1500.00",
+    "taxRuleId": "taxrule-gst-12",
+    "variants": []
+  },
+  {
+    "id": "product-addon-accounting",
+    "name": "Accounting Addon",
+    "type": "ADDON",
+    "salesPrice": "560.00",
+    "costPrice": "100.00",
+    "taxRuleId": "taxrule-gst-18",
+    "variants": []
+  },
+  {
+    "id": "product-addon-crm",
+    "name": "CRM Addon",
+    "type": "ADDON",
+    "salesPrice": "760.00",
+    "costPrice": "150.00",
+    "taxRuleId": "taxrule-gst-18",
+    "variants": []
+  },
+  {
+    "id": "product-addon-inventory",
+    "name": "Inventory Addon",
+    "type": "ADDON",
+    "salesPrice": "860.00",
+    "costPrice": "180.00",
+    "taxRuleId": "taxrule-gst-18",
+    "variants": []
+  },
+  {
+    "id": "product-sla-standard",
+    "name": "Standard SLA",
+    "type": "SERVICE",
+    "salesPrice": "499.00",
+    "costPrice": "100.00",
+    "taxRuleId": "taxrule-gst-5",
+    "variants": []
+  },
+  {
+    "id": "product-sla-enterprise",
+    "name": "Enterprise SLA",
+    "type": "SERVICE",
+    "salesPrice": "1999.00",
+    "costPrice": "400.00",
+    "taxRuleId": "taxrule-gst-5",
+    "variants": []
+  },
+  {
+    "id": "product-dev-support",
+    "name": "Developer Support Pack",
+    "type": "SUPPORT",
+    "salesPrice": "3499.00",
+    "costPrice": "900.00",
+    "taxRuleId": "taxrule-gst-18",
+    "variants": []
+  }
+]

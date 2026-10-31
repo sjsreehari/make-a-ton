@@ -1,0 +1,74 @@
+[
+  {
+    "id": "plan-starter-monthly",
+    "name": "Starter Monthly",
+    "price": "999.00",
+    "billingPeriod": "MONTHLY",
+    "minQuantity": 1,
+    "autoClose": false,
+    "closable": true,
+    "pausable": true,
+    "renewable": true,
+    "isActive": true
+  },
+  {
+    "id": "plan-pro-monthly",
+    "name": "Pro Monthly",
+    "price": "2499.00",
+    "billingPeriod": "MONTHLY",
+    "minQuantity": 1,
+    "autoClose": false,
+    "closable": true,
+    "pausable": true,
+    "renewable": true,
+    "isActive": true
+  },
+  {
+    "id": "plan-enterprise-monthly",
+    "name": "Enterprise Monthly",
+    "price": "9999.00",
+    "billingPeriod": "MONTHLY",
+    "minQuantity": 1,
+    "autoClose": false,
+    "closable": true,
+    "pausable": true,
+    "renewable": true,
+    "isActive": true
+  },
+  {
+    "id": "plan-starter-yearly",
+    "name": "Starter Yearly",
+    "price": "9990.00",
+    "billingPeriod": "YEARLY",
+    "minQuantity": 1,
+    "autoClose": true,
+    "closable": true,
+    "pausable": false,
+    "renewable": true,
+    "isActive": true
+  },
+  {
+    "id": "plan-pro-yearly",
+    "name": "Pro Yearly",
+    "price": "24990.00",
+    "billingPeriod": "YEARLY",
+    "minQuantity": 1,
+    "autoClose": true,
+    "closable": true,
+    "pausable": false,
+    "renewable": true,
+    "isActive": true
+  },
+  {
+    "id": "plan-odoo-monthly",
+    "name": "Odoo Subscription Monthly",
+    "price": "4999.00",
+    "billingPeriod": "MONTHLY",
+    "minQuantity": 1,
+    "autoClose": false,
+    "closable": true,
+    "pausable": true,
+    "renewable": true,
+    "isActive": true
+  }
+]
