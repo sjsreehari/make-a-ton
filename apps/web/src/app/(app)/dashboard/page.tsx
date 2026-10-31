@@ -74,7 +74,7 @@ export default function DashboardPage() {
       setRecentSubscriptions(subRes.data || []);
       setLeakageAtRisk(leakRes.totalAmountAtRisk || 0);
     } catch (err: any) {
-      console.error("Failed to load dashboard data from MySQL:", err);
+      console.error("Failed to load dashboard data:", err);
     } finally {
       setLoading(false);
     }
@@ -88,7 +88,7 @@ export default function DashboardPage() {
     try {
       setBillingRunning(true);
       const res = await api.invoices.runBilling({ dryRun: false });
-      setBillingResult(`Billing run complete in MySQL! ${res.created} invoices created, ${res.skipped} skipped, ${res.failed} failed.`);
+      setBillingResult(`Billing run complete. ${res.created} invoices created, ${res.skipped} skipped, ${res.failed} failed.`);
       await fetchDashboardData();
       setTimeout(() => setBillingResult(null), 5000);
     } catch (err: any) {
@@ -115,13 +115,9 @@ export default function DashboardPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Operations Dashboard</h1>
-            <span className="px-2 py-0.5 rounded-full text-[11px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-              <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              MySQL Engine Live
-            </span>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Automated billing lifecycle, cash flow tracking, and revenue health for Brightloop Software.
+            Billing, payments, and subscription activity at a glance.
           </p>
         </div>
 
@@ -154,7 +150,7 @@ export default function DashboardPage() {
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors shadow-md shadow-indigo-600/20 disabled:opacity-50"
           >
             <PlayCircle className={`size-3.5 ${billingRunning ? "animate-spin" : ""}`} />
-            {billingRunning ? "Running Billing in MySQL..." : "⚡ Run Billing Run"}
+            {billingRunning ? "Running billing..." : "Run billing"}
           </button>
         </div>
       </div>
@@ -181,7 +177,7 @@ export default function DashboardPage() {
           </div>
           <div className="mt-1 flex items-center gap-1 text-[11px] text-emerald-400">
             <ArrowUpRight className="size-3" />
-            <span>Active in MySQL</span>
+            <span>Currently active</span>
           </div>
         </div>
 
@@ -208,7 +204,7 @@ export default function DashboardPage() {
             ₹{Number(mrrMetrics.arr || (mrrMetrics.mrr * 12) || 51420000).toLocaleString("en-IN")}
           </div>
           <div className="mt-1 flex items-center gap-1 text-[11px] text-zinc-400">
-            <span>MRR × 12 Run-rate</span>
+            <span>Annualized monthly revenue</span>
           </div>
         </div>
 
@@ -221,7 +217,7 @@ export default function DashboardPage() {
             ₹{Number(recentInvoices.filter(i => i.status === "OVERDUE").reduce((acc, curr) => acc + Number(curr.amountDue || 0), 0) || 44970).toLocaleString("en-IN")}
           </div>
           <div className="mt-1 flex items-center gap-1 text-[11px] text-amber-400/80">
-            <span>Automated dunning active</span>
+            <span>Overdue invoices</span>
           </div>
         </div>
 
@@ -234,7 +230,7 @@ export default function DashboardPage() {
             ₹{leakageAtRisk.toLocaleString("en-IN")}
           </div>
           <div className="mt-1 flex items-center gap-1 text-[11px] text-red-400/80">
-            <span>1-click fix available</span>
+            <span>Review flagged items</span>
           </div>
         </div>
       </div>
@@ -243,8 +239,8 @@ export default function DashboardPage() {
       <div className="p-5 rounded-xl border border-border bg-card/60 shadow-sm space-y-3">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-foreground">Revenue Trajectory & Movement</h2>
-            <p className="text-xs text-muted-foreground">Historical MRR growth with new additions and churn mitigation</p>
+            <h2 className="text-sm font-semibold text-foreground">Monthly recurring revenue</h2>
+            <p className="text-xs text-muted-foreground">Revenue over the past six months</p>
           </div>
         </div>
 
@@ -281,7 +277,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FileText className="size-4 text-indigo-400" />
-              <h2 className="text-sm font-semibold text-foreground">Recent Invoices in MySQL</h2>
+              <h2 className="text-sm font-semibold text-foreground">Recent invoices</h2>
             </div>
             <Link href="/invoices" className="text-xs text-indigo-400 hover:text-indigo-300">
               View all ({recentInvoices.length}) →
@@ -317,7 +313,7 @@ export default function DashboardPage() {
                     <button
                       onClick={() => handleSendReminder(inv.id, inv.number)}
                       className="p-1 rounded bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20"
-                      title="Send WhatsApp & Email Reminder"
+                      title="Send invoice reminder"
                     >
                       <Send className="size-3" />
                     </button>
@@ -333,7 +329,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Layers className="size-4 text-indigo-400" />
-              <h2 className="text-sm font-semibold text-foreground">Recent Subscriptions in MySQL</h2>
+              <h2 className="text-sm font-semibold text-foreground">Recent subscriptions</h2>
             </div>
             <Link href="/subscriptions" className="text-xs text-indigo-400 hover:text-indigo-300">
               Manage Subscriptions →
