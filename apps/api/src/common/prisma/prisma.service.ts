@@ -10,14 +10,14 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       await this.$connect();
       this.logger.log('Connected to MySQL via Prisma');
     } catch (err: any) {
-      this.logger.warn(`Database connection failed during init: ${err.message}. Routes requiring database will connect once MySQL is active.`);
+      this.logger.warn(`Database connection failed during init: ${err.message}. Routes requiring the database will recover once MySQL is available.`);
     }
   }
 
   async onModuleDestroy() {
     try {
       await this.$disconnect();
-      this.logger.log('Disconnected from PostgreSQL');
+      this.logger.log('Disconnected from MySQL');
     } catch {
       // ignore disconnect errors
     }

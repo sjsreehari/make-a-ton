@@ -84,7 +84,7 @@ export default function BillingRunPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Bulk Billing Operations</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Automated recurring billing runs with zero duplicate protection and dry-run pre-flight anomaly detection.
+            Preview invoices before creating them, then run billing for the selected period.
           </p>
         </div>
 
@@ -96,8 +96,8 @@ export default function BillingRunPage() {
               onChange={(e) => setTargetPeriod(e.target.value as any)}
               className="bg-transparent text-foreground focus:outline-none cursor-pointer font-medium"
             >
-              <option value="next_cycle">Next Cycle (Nov 20, 2026 - Catch-up)</option>
-              <option value="today">Current Cycle (Today: Oct 31, 2026)</option>
+              <option value="next_cycle">Next cycle (Nov 20, 2026)</option>
+              <option value="today">Current cycle</option>
             </select>
           </div>
 
@@ -115,7 +115,7 @@ export default function BillingRunPage() {
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors shadow-md shadow-indigo-600/20 disabled:opacity-50"
           >
             <PlayCircle className={`size-3.5 ${running ? "animate-spin" : ""}`} />
-            {running ? "Executing Run in DB..." : "⚡ Run Billing Now"}
+            {running ? "Running billing..." : "Run billing"}
           </button>
         </div>
       </div>
@@ -133,10 +133,10 @@ export default function BillingRunPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm font-semibold">
               <CheckCircle2 className="size-4" />
-              <span>{result.dryRun ? "Dry Run Simulation Completed (No DB records modified)" : "Live Billing Batch Completed Successfully"}</span>
+              <span>{result.dryRun ? "Preview complete. No invoices were created." : "Billing run complete."}</span>
             </div>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-700">
-              {result.dryRun ? "PRE-FLIGHT MODE" : "COMMITTED TO MYSQL"}
+              {result.dryRun ? "PREVIEW" : "COMPLETE"}
             </span>
           </div>
 
@@ -146,7 +146,7 @@ export default function BillingRunPage() {
               <p className="text-xl font-bold font-mono text-emerald-400 mt-0.5">{result.created}</p>
             </div>
             <div className="p-3 rounded-lg bg-zinc-950/40 border border-border">
-              <span className="text-[11px] text-zinc-400">Skipped (Zero Duplicates / Already Billed)</span>
+              <span className="text-[11px] text-zinc-400">Skipped (already billed)</span>
               <p className="text-xl font-bold font-mono text-zinc-200 mt-0.5">{result.skipped}</p>
             </div>
             <div className="p-3 rounded-lg bg-zinc-950/40 border border-border">
@@ -155,7 +155,7 @@ export default function BillingRunPage() {
             </div>
           </div>
           <p className="text-[11px] text-zinc-400 italic">
-            * Database unique constraint (subscriptionId, billingPeriodStart) guaranteed zero duplicates even if re-triggered multiple times.
+            Duplicate invoices are skipped if billing is run more than once for the same period.
           </p>
         </div>
       )}

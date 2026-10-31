@@ -17,10 +17,10 @@ interface TypewriterHeroProps {
 }
 
 const DEFAULT_WORDS = [
-  "Task Prioritizer",
-  "Time Strategist",
   "Billing Engine",
-  "Revenue Pilot",
+  "Subscription Pilot",
+  "Invoicing Hub",
+  "Revenue Guardian",
 ];
 
 export function TypewriterHero({
@@ -28,7 +28,7 @@ export function TypewriterHero({
   typingSpeed = 95,
   deletingSpeed = 45,
   pauseDuration = 2200,
-  subtitle = "Toki reaches out and coordinates your meetings, architects your daily schedule, and prioritizes your most urgent tasks and deadlines.",
+  subtitle = "BillPilot automates your recurring subscriptions, generates idempotent invoices, and eliminates revenue leaks from quote to cash in the bank.",
   stats,
 }: TypewriterHeroProps) {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);

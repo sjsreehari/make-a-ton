@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-display: 'Instrument Serif', ui-serif, Georgia, serif;
+
+  --color-paper: #f4f3ef;
+  --color-ink: #0b0b0b;
+  --color-ink-2: #55534d;
+  --color-ink-3: #8c8981;
+  --color-line: #e2dfd7;
+  --color-stage: #eae8e2;
+  --color-guide: #e5484d;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+  }
+}
+
+/* Checkerboard that proves the expression files have transparent backgrounds. */
+@utility bg-checker {
+  background-color: #ffffff;
+  background-image: conic-gradient(#e6e4de 25%, transparent 0 50%, #e6e4de 0 75%, transparent 0);
+  background-size: 18px 18px;
+}

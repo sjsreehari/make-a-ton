@@ -8,7 +8,6 @@ import {
   HelpCircle,
   CheckCircle2,
   AlertCircle,
-  Copy,
   Calculator,
   PlayCircle,
   XCircle,
@@ -23,9 +22,17 @@ export default function InvoicesPage() {
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [explainingInvoice, setExplainingInvoice] = useState<Invoice | null>(null);
-  const [copiedLink, setCopiedLink] = useState<string | null>(null);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
   const [runningBilling, setRunningBilling] = useState(false);
+
+  const handleOpenPdf = async (inv: Invoice) => {
+    try {
+      await api.invoices.openPdf(inv.id);
+    } catch (err: any) {
+      setActionNotice(err.message || "Could not open invoice PDF.");
+      setTimeout(() => setActionNotice(null), 3000);
+    }
+  };
 
   const fetchInvoices = async () => {
     try {
@@ -36,7 +43,7 @@ export default function InvoicesPage() {
       });
       setInvoices(res.data || []);
     } catch (err: any) {
-      console.error("Failed to load invoices from MySQL:", err);
+      console.error("Failed to load invoices:", err);
     } finally {
       setLoading(false);
     }
@@ -46,19 +53,10 @@ export default function InvoicesPage() {
     fetchInvoices();
   }, [filterStatus]);
 
-  const handleCopyLink = (inv: Invoice) => {
-    const link = `https://rzp.io/i/bp_${inv.number.toLowerCase()}`;
-    if (typeof navigator !== "undefined") {
-      navigator.clipboard.writeText(link);
-    }
-    setCopiedLink(inv.number);
-    setTimeout(() => setCopiedLink(null), 2500);
-  };
-
   const handleConfirm = async (id: string, num: string) => {
     try {
       await api.invoices.confirm(id);
-      setActionNotice(`Invoice ${num} confirmed and locked in MySQL!`);
+      setActionNotice(`Invoice ${num} confirmed.`);
       await fetchInvoices();
       setTimeout(() => setActionNotice(null), 3000);
     } catch (err: any) {
@@ -67,10 +65,10 @@ export default function InvoicesPage() {
   };
 
   const handleCancel = async (id: string, num: string) => {
-    if (!confirm(`Are you sure you want to cancel invoice ${num}? This will be recorded in MySQL audit.`)) return;
+    if (!confirm(`Are you sure you want to cancel invoice ${num}?`)) return;
     try {
       await api.invoices.cancel(id, "Cancelled by user via dashboard");
-      setActionNotice(`Invoice ${num} cancelled and recorded in MySQL!`);
+      setActionNotice(`Invoice ${num} cancelled.`);
       await fetchInvoices();
       setTimeout(() => setActionNotice(null), 3000);
     } catch (err: any) {
@@ -82,7 +80,7 @@ export default function InvoicesPage() {
     try {
       setRunningBilling(true);
       const res = await api.invoices.runBilling({ dryRun: false });
-      setActionNotice(`Billing run executed in MySQL: ${res.created} invoices created, ${res.skipped} skipped.`);
+      setActionNotice(`Billing run complete: ${res.created} invoices created, ${res.skipped} skipped.`);
       await fetchInvoices();
       setTimeout(() => setActionNotice(null), 4000);
     } catch (err: any) {
@@ -109,11 +107,11 @@ export default function InvoicesPage() {
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Invoices & Billing</h1>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              MySQL Live ({invoices.length})
+              {invoices.length} invoices
             </span>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Auto-generated invoices with tax breakdown, idempotency guarantees, PDF delivery, and payment links.
+            Review invoice status, balances, and due dates. Download a PDF or manage a draft invoice.
           </p>
         </div>
 
@@ -131,7 +129,7 @@ export default function InvoicesPage() {
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors shadow-sm disabled:opacity-50"
           >
             <PlayCircle className={`size-3.5 ${runningBilling ? "animate-spin" : ""}`} />
-            {runningBilling ? "Running Billing..." : "⚡ Run Billing Run"}
+            {runningBilling ? "Running billing..." : "Run billing"}
           </button>
         </div>
       </div>
@@ -193,7 +191,7 @@ export default function InvoicesPage() {
                 <td colSpan={7} className="py-8 text-center text-muted-foreground">
                   <div className="flex items-center justify-center gap-2">
                     <RefreshCw className="size-4 animate-spin text-indigo-400" />
-                    <span>Loading invoices from MySQL database...</span>
+                    <span>Loading invoices...</span>
                   </div>
                 </td>
               </tr>
@@ -232,7 +230,7 @@ export default function InvoicesPage() {
                           : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
                       }`}
                     >
-                      {inv.status}
+                      {inv.displayStatus || inv.status}
                     </span>
                   </td>
                   <td className="py-3 px-4 text-right">
@@ -250,19 +248,10 @@ export default function InvoicesPage() {
                       {/* PDF Download Streaming via backend */}
                       <button
                         title="Download Invoice PDF"
-                        onClick={() => window.open(api.invoices.pdfUrl(inv.id), "_blank")}
+                        onClick={() => void handleOpenPdf(inv)}
                         className="p-1 rounded bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border"
                       >
                         <Download className="size-3" />
-                      </button>
-
-                      {/* Razorpay link copy */}
-                      <button
-                        title="Copy Razorpay Payment Link"
-                        onClick={() => handleCopyLink(inv)}
-                        className="p-1 rounded bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border"
-                      >
-                        <Copy className="size-3" />
                       </button>
 
                       {/* Confirm (if draft) */}
@@ -295,13 +284,6 @@ export default function InvoicesPage() {
         </table>
       </div>
 
-      {copiedLink && (
-        <div className="fixed bottom-6 right-6 px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-xs font-medium shadow-lg animate-in fade-in flex items-center gap-2">
-          <CheckCircle2 className="size-4" />
-          <span>Razorpay link for {copiedLink} copied to clipboard!</span>
-        </div>
-      )}
-
       {/* "Why is my bill ₹X?" Interactive Explainer Modal [T2 4.9] */}
       {explainingInvoice && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -329,21 +311,21 @@ export default function InvoicesPage() {
                 <div className="flex justify-between text-zinc-300">
                   <span>1. Gross Subtotal:</span>
                   <span className="font-mono text-white">
-                    ₹{Number(explainingInvoice.subtotal || explainingInvoice.total).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                    ₹{Number(explainingInvoice.subtotal ?? explainingInvoice.total).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                   </span>
                 </div>
                 <div className="flex justify-between text-zinc-300">
                   <span>2. Discount Applied:</span>
                   <span className="font-mono text-emerald-400">
-                    {Number(explainingInvoice.discountAmount || 0) > 0
-                      ? `-₹${Number(explainingInvoice.discountAmount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`
+                    {Number(explainingInvoice.discountTotal ?? explainingInvoice.discountAmount ?? 0) > 0
+                      ? `-₹${Number(explainingInvoice.discountTotal ?? explainingInvoice.discountAmount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`
                       : "None"}
                   </span>
                 </div>
                 <div className="flex justify-between text-zinc-300">
-                  <span>3. GST Tax Breakdown:</span>
+                  <span>Tax:</span>
                   <span className="font-mono text-cyan-400">
-                    ₹{Number(explainingInvoice.taxAmount || (Number(explainingInvoice.total) * 0.18 / 1.18)).toLocaleString("en-IN", { minimumFractionDigits: 2 })} (CGST + SGST)
+                    ₹{Number(explainingInvoice.taxTotal ?? explainingInvoice.taxAmount ?? 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                   </span>
                 </div>
                 <div className="flex justify-between text-white font-bold pt-2 border-t border-zinc-700 text-sm">
@@ -362,16 +344,16 @@ export default function InvoicesPage() {
 
               {/* Month-over-month delta note */}
               <div className="p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-200">
-                <span className="font-semibold block text-[11px] uppercase tracking-wider text-indigo-300">Audited Math Verification:</span>
+                <span className="font-semibold block text-[11px] uppercase tracking-wider text-indigo-300">Invoice calculation</span>
                 <p className="mt-1 text-xs leading-relaxed">
-                  Line items and tax rates calculated with Decimal arithmetic (no floating-point rounding errors). Idempotency key verified.
+                  Amounts shown here are taken from the invoice record.
                 </p>
               </div>
             </div>
 
             <div className="pt-2 flex justify-between items-center">
               <button
-                onClick={() => window.open(api.invoices.pdfUrl(explainingInvoice.id), "_blank")}
+                onClick={() => void handleOpenPdf(explainingInvoice)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white"
               >
                 <Download className="size-3.5" />
