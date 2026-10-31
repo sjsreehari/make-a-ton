@@ -2,9 +2,11 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { CacheService } from './cache.service';
+import { RedisService } from './redis.service';
 import { REDIS_CLIENT } from './redis.constants';
 
 export * from './redis.constants';
+export * from './redis.service';
 
 @Global()
 @Module({
@@ -25,8 +27,8 @@ export * from './redis.constants';
       },
     },
     CacheService,
+    RedisService,
   ],
-  exports: [REDIS_CLIENT, CacheService],
+  exports: [REDIS_CLIENT, CacheService, RedisService],
 })
 export class RedisModule {}
-

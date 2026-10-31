@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -46,6 +46,14 @@ export class CatalogController {
     return this.catalogService.createPlan(dto, user.sub);
   }
 
+  @Delete('plans/:id')
+  @ApiBearerAuth()
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'Delete or deactivate plan (Admin only)' })
+  async deletePlan(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.catalogService.deletePlan(id, user.sub);
+  }
+
   @Get('products')
   @ApiBearerAuth()
   @Roles('ADMIN', 'STAFF')
@@ -73,6 +81,14 @@ export class CatalogController {
     return this.catalogService.createProduct(dto, user.sub);
   }
 
+  @Delete('products/:id')
+  @ApiBearerAuth()
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'Delete or deactivate product (Admin only)' })
+  async deleteProduct(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.catalogService.deleteProduct(id, user.sub);
+  }
+
   @Post('products/variants')
   @ApiBearerAuth()
   @Roles('ADMIN')
@@ -84,4 +100,3 @@ export class CatalogController {
     return this.catalogService.addVariant(dto, user.sub);
   }
 }
-

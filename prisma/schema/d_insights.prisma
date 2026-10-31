@@ -37,7 +37,7 @@ model NotificationLog {
   payload           Json
   status            NotificationStatus @default(QUEUED)
   providerMessageId String?
-  error             String?
+  error             String?            @db.Text
   attempts          Int                @default(0)
   createdAt         DateTime           @default(now())
   sentAt            DateTime?
@@ -52,7 +52,7 @@ model MessageTemplate {
   key       String   @unique
   channel   Channel
   subject   String?
-  body      String
+  body      String   @db.Text
   isActive  Boolean  @default(true)
   updatedAt DateTime @updatedAt
 }

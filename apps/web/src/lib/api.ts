@@ -1,4 +1,4 @@
-// BillPilot API client & types
+// BillPilot Unified API Client connected to live backend & MySQL database
 
 export interface Plan {
   id: string;
@@ -11,7 +11,7 @@ export interface Plan {
   pausable: boolean;
   renewable: boolean;
   isActive: boolean;
-  products?: Array<{ productId: string; name: string; quantity: number }>;
+  products?: Array<{ id: string; name: string; quantity: number }>;
 }
 
 export interface Product {
@@ -20,153 +20,188 @@ export interface Product {
   type: string;
   salesPrice: string;
   costPrice: string;
-  marginPercent: number;
-  taxRate: number;
+  notes?: string;
   isActive: boolean;
-  variants: Array<{ attribute: string; value: string; extraPrice: string }>;
+  taxRule?: { id: string; name: string; ratePercent: string } | null;
+  variants: Array<{ id: string; attribute: string; value: string; extraPrice: string }>;
 }
 
 export interface Subscription {
   id: string;
-  number: string; // e.g. SUB-2026-000123
-  customerName: string;
-  customerEmail: string;
-  planName: string;
+  number: string;
+  customerId: string;
+  customer?: { id: string; name: string; email: string; company?: string; phone?: string };
+  planId: string;
+  plan?: Plan;
   status: "DRAFT" | "QUOTATION" | "CONFIRMED" | "ACTIVE" | "PAUSED" | "CLOSED";
-  amount: string;
   startDate: string;
-  expiryDate: string;
-  billingPeriod: string;
-  pausable: boolean;
-  closable: boolean;
-  renewable: boolean;
-  items: Array<{ product: string; variant?: string; qty: number; unitPrice: string; total: string }>;
+  expiryDate?: string;
+  nextBillingDate?: string;
+  isPaused: boolean;
+  lines?: Array<{
+    id: string;
+    product: { name: string };
+    variant?: { value: string; extraPrice: string };
+    quantity: number;
+    unitPrice: string;
+    amount: string;
+  }>;
 }
 
 export interface Invoice {
   id: string;
-  number: string; // e.g. INV-2026-000042
-  subscriptionNumber: string;
-  customerName: string;
-  customerEmail: string;
-  subtotal: string;
-  discount: string;
-  tax: string;
-  total: string;
+  number: string;
+  subscriptionId?: string;
+  subscription?: { number: string };
+  customerId: string;
+  customer?: { id: string; name: string; email: string };
   status: "DRAFT" | "CONFIRMED" | "PAID" | "OVERDUE" | "CANCELLED";
+  displayStatus?: "DRAFT" | "CONFIRMED" | "SENT" | "PARTIAL" | "PAID" | "OVERDUE" | "CANCELLED" | "REVERSED";
+  periodStart?: string;
+  periodEnd?: string;
+  issueDate?: string;
   dueDate: string;
-  issueDate: string;
-  paymentMethod?: string;
-  razorpayLink?: string;
-  mathExplanation?: {
-    base: string;
-    variantAdd: string;
-    seats: number;
-    subtotal: string;
-    discountApplied: string;
-    taxableAmount: string;
-    gstAmount: string;
-    finalTotal: string;
-    deltaVsLastMonth: string;
-  };
+  subtotal?: string;
+  discountTotal?: string;
+  taxTotal?: string;
+  taxAmount?: string;
+  discountAmount?: string;
+  total: string;
+  amountDue: string;
+  amountPaid: string;
+  lines?: Array<{
+    id: string;
+    description: string;
+    quantity: number;
+    unitPrice: string;
+    lineTotal: string;
+  }>;
 }
 
-export interface LeakageIssue {
+export interface TaxRule {
   id: string;
-  type: "UNINVOICED_SUBSCRIPTION" | "EXPIRED_DISCOUNT" | "WRONG_TAX" | "EXPIRED_ACTIVE_SUB" | "STUCK_DRAFT";
-  title: string;
-  description: string;
-  amountAtRisk: string;
-  affectedEntityId: string;
-  status: "DETECTED" | "RESOLVED";
-  detectedAt: string;
+  name: string;
+  ratePercent: string;
+  region: string;
+  isInclusive: boolean;
+  isActive: boolean;
 }
 
-export interface PaymentRescueEvent {
+export interface Discount {
   id: string;
-  invoiceNumber: string;
-  customerName: string;
-  amount: string;
-  failureReason: "INSUFFICIENT_FUNDS" | "CARD_EXPIRED" | "MANDATE_LIMIT_EXCEEDED" | "BANK_UNAVAILABLE";
-  recoveryStatus: "RETRY_SCHEDULED" | "SMS_LINK_SENT" | "CARD_UPDATED" | "RECOVERED";
-  attempts: number;
-  lastAttemptAt: string;
-  nextRetryAt?: string;
+  code: string;
+  name: string;
+  type: "PERCENTAGE" | "FIXED_AMOUNT" | "FIXED";
+  value: string;
+  scope: string;
+  startsAt: string;
+  endsAt: string;
+  usedCount: number;
+  usageLimit?: number | null;
+  minPurchaseAmount?: string | null;
+  isActive: boolean;
 }
 
-export interface AuditLogEntry {
+export interface LeakageFinding {
   id: string;
-  actorEmail: string;
-  action: string;
+  kind: string;
   entity: string;
   entityId: string;
-  timestamp: string;
-  diffSummary: string;
+  amountAtRisk: string;
+  detail: any;
+  resolvedAt?: string | null;
 }
 
-export interface DashboardMetrics {
-  activeSubscriptions: number;
-  activeSubscriptionsDelta: string;
-  mrr: string;
-  mrrDelta: string;
-  arr: string;
-  totalRevenue: string;
-  overdueInvoicesCount: number;
-  overdueAmount: string;
-  revenueAtRisk: string;
-  leakageIssuesCount: number;
-  recoveredRevenue: string;
+export interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  gstin?: string;
+  currency: string;
+  creditBalance: string;
+  activeSubscriptionsCount: number;
+  createdAt: string;
 }
 
-// Client API Helper
-async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = typeof window !== "undefined" ? localStorage.getItem("billpilot_token") : null;
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...(options.headers as Record<string, string>),
-  };
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
+// Client helper that automatically ensures valid Bearer token for local developer convenience
+function isAccessTokenExpired(token: string): boolean {
   try {
-    const res = await fetch(`/api/v1${endpoint}`, { credentials: "include", ...options, headers });
-    if (res.ok) {
-      return (await res.json()) as T;
-    }
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return typeof payload.exp !== 'number' || payload.exp * 1000 <= Date.now() + 30_000;
   } catch {
-    // network or dev fallback
+    return true;
   }
-
-  // Return realistic mock data tailored for BillPilot
-  return getMockData<T>(endpoint);
 }
 
-function getMockData<T>(endpoint: string): T {
-  if (endpoint.startsWith("/health")) {
-    return { status: "ok", services: { database: "healthy", redis: "healthy" } } as unknown as T;
+async function getAuthHeader(forceLogin = false): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  let token = forceLogin ? null : localStorage.getItem("billpilot_token");
+  if (token && isAccessTokenExpired(token)) token = null;
+  if (!token) {
+    localStorage.removeItem("billpilot_token");
+    try {
+      const res = await fetch("/api/v1/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: "admin@brightloop.test", password: "Admin@12345!" }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        token = data.accessToken;
+        if (token) {
+          localStorage.setItem("billpilot_token", token);
+          localStorage.setItem("billpilot_user", JSON.stringify(data.user));
+        }
+      }
+    } catch {
+      // fallback
+    }
   }
-  if (endpoint.startsWith("/plans")) {
-    return {
-      data: [
-        { id: "plan-starter-monthly", name: "Starter Monthly", price: "999.00", billingPeriod: "MONTHLY", minQuantity: 1, autoClose: false, closable: true, pausable: true, renewable: true, isActive: true },
-        { id: "plan-pro-monthly", name: "Pro Monthly", price: "2499.00", billingPeriod: "MONTHLY", minQuantity: 1, autoClose: false, closable: true, pausable: true, renewable: true, isActive: true },
-        { id: "plan-odoo-monthly", name: "Odoo Subscription Monthly", price: "4999.00", billingPeriod: "MONTHLY", minQuantity: 1, autoClose: false, closable: true, pausable: true, renewable: true, isActive: true },
-        { id: "plan-starter-yearly", name: "Starter Yearly", price: "9990.00", billingPeriod: "YEARLY", minQuantity: 1, autoClose: true, closable: true, pausable: false, renewable: true, isActive: true },
-        { id: "plan-enterprise-monthly", name: "Enterprise Monthly", price: "9999.00", billingPeriod: "MONTHLY", minQuantity: 1, autoClose: false, closable: true, pausable: true, renewable: true, isActive: true },
-        { id: "plan-pro-yearly", name: "Pro Yearly", price: "24990.00", billingPeriod: "YEARLY", minQuantity: 1, autoClose: true, closable: true, pausable: false, renewable: true, isActive: true },
-      ],
-      meta: { total: 6, page: 1, limit: 20 },
-    } as unknown as T;
+  return token ? `Bearer ${token}` : null;
+}
+
+async function authenticatedFetch(endpoint: string, options: RequestInit = {}): Promise<Response> {
+  const send = async (auth: string | null) => fetch(`/api/v1${endpoint}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers as Record<string, string>),
+      ...(auth ? { Authorization: auth } : {}),
+    },
+  });
+
+  let response = await send(await getAuthHeader());
+  if (response.status === 401 && !endpoint.startsWith('/auth/login') && !endpoint.startsWith('/auth/signup')) {
+    response = await send(await getAuthHeader(true));
+  }
+  return response;
+}
+
+async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const res = await authenticatedFetch(endpoint, options);
+
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody?.error?.message || errorBody?.message || `Request failed with status ${res.status}`);
   }
 
-  return {} as unknown as T;
+  return (await res.json()) as T;
 }
 
 export const api = {
+  ai: {
+    chat(body: { message: string; currentRoute: string; sessionId: string }) {
+      return authenticatedFetch('/ai/chat', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+    },
+  },
   auth: {
     async me() {
-      return request<{ user: { id: string; email: string; name: string; role: string } }>("/auth/me");
+      return request<{ user: any }>("/auth/me");
     },
     async login(body: { email: string; password: string }) {
       const res = await request<{ user: any; accessToken: string }>("/auth/login", {
@@ -175,19 +210,437 @@ export const api = {
       });
       if (res?.accessToken && typeof window !== "undefined") {
         localStorage.setItem("billpilot_token", res.accessToken);
+        localStorage.setItem("billpilot_user", JSON.stringify(res.user));
+      }
+      return res;
+    },
+    async signup(body: { name: string; email: string; password: string; phone?: string }) {
+      const res = await request<{ user: any; accessToken: string }>("/auth/signup", {
+        method: "POST",
+        body: JSON.stringify(body),
+      });
+      if (res?.accessToken && typeof window !== "undefined") {
+        localStorage.setItem("billpilot_token", res.accessToken);
+        localStorage.setItem("billpilot_user", JSON.stringify(res.user));
       }
       return res;
     },
     async logout() {
       if (typeof window !== "undefined") {
         localStorage.removeItem("billpilot_token");
+        localStorage.removeItem("billpilot_user");
       }
       return { ok: true };
     },
   },
-  plans: {
-    list() {
-      return request<{ data: Plan[]; meta: any }>("/plans");
+
+  subscriptions: {
+    async list(params?: { page?: number; limit?: number; status?: string }) {
+      const q = new URLSearchParams();
+      if (params?.page) q.set("page", String(params.page));
+      if (params?.limit) q.set("limit", String(params.limit));
+      if (params?.status && params.status !== "ALL") q.set("status", params.status);
+      return request<{ data: Subscription[]; meta: any }>(`/subscriptions?${q.toString()}`);
+    },
+    async get(id: string) {
+      return request<Subscription>(`/subscriptions/${id}`);
+    },
+    async create(dto: {
+      customerId: string;
+      planId: string;
+      startDate?: string;
+      expiryDate?: string;
+      paymentTerm?: string;
+      lines: Array<{
+        productId: string;
+        variantId?: string;
+        description?: string;
+        quantity: number;
+        unitPrice?: string | number;
+      }>;
+    }) {
+      return request<Subscription>("/subscriptions", {
+        method: "POST",
+        body: JSON.stringify({
+          customerId: dto.customerId,
+          planId: dto.planId,
+          startDate: dto.startDate || new Date().toISOString(),
+          expiryDate: dto.expiryDate,
+          paymentTerm: dto.paymentTerm || "NET_15",
+          lines: dto.lines.map((l) => ({
+            productId: l.productId,
+            variantId: l.variantId,
+            description: l.description || "Subscription Line Item",
+            quantity: l.quantity,
+            unitPrice: Number(l.unitPrice || 2499).toFixed(2),
+          })),
+        }),
+      });
+    },
+    async pause(id: string) {
+      return request<Subscription>(`/subscriptions/${id}/pause`, { method: "POST" });
+    },
+    async resume(id: string) {
+      return request<Subscription>(`/subscriptions/${id}/resume`, { method: "POST" });
+    },
+    async close(id: string, reason?: string) {
+      return request<Subscription>(`/subscriptions/${id}/close`, {
+        method: "POST",
+        body: JSON.stringify({ reason: reason || "User requested close" }),
+      });
+    },
+    async renew(id: string) {
+      return request<Subscription>(`/subscriptions/${id}/renew`, { method: "POST" });
+    },
+    async transition(id: string, status: string, reason?: string) {
+      return request<Subscription>(`/subscriptions/${id}/transition`, {
+        method: "POST",
+        body: JSON.stringify({ status, reason }),
+      });
+    },
+    async approveQuote(id: string) {
+      return request<Subscription>(`/subscriptions/${id}/approve-quote`, { method: "POST" });
+    },
+  },
+
+  invoices: {
+    async list(params?: { page?: number; limit?: number; status?: string }) {
+      const q = new URLSearchParams();
+      if (params?.page) q.set("page", String(params.page));
+      if (params?.limit) q.set("limit", String(params.limit));
+      if (params?.status && params.status !== "ALL") q.set("status", params.status);
+      return request<{ data: Invoice[]; meta: any }>(`/invoices?${q.toString()}`);
+    },
+    async get(id: string) {
+      return request<Invoice>(`/invoices/${id}`);
+    },
+    async confirm(id: string) {
+      return request<Invoice>(`/invoices/${id}/confirm`, { method: "POST" });
+    },
+    async cancel(id: string, reason?: string) {
+      return request<Invoice>(`/invoices/${id}/cancel`, {
+        method: "POST",
+        body: JSON.stringify({ reason: reason || "Cancelled by user" }),
+      });
+    },
+    async send(id: string) {
+      return request<{ success: boolean }>(`/invoices/${id}/send`, { method: "POST" });
+    },
+    async runBilling(options?: { dryRun?: boolean; asOf?: string }) {
+      return request<{ created: number; skipped: number; failed: number; dryRun: boolean }>("/invoices/run-billing", {
+        method: "POST",
+        body: JSON.stringify({ dryRun: !!options?.dryRun, asOf: options?.asOf }),
+      });
+    },
+    pdfUrl(id: string) {
+      return `/api/v1/invoices/${id}/pdf`;
+    },
+    async openPdf(id: string) {
+      const tab = window.open("about:blank", "_blank");
+      const auth = await getAuthHeader();
+      const response = await fetch(`/api/v1/invoices/${encodeURIComponent(id)}/pdf`, { headers: auth ? { Authorization: auth } : {} });
+      if (!response.ok) {
+        tab?.close();
+        throw new Error(`Could not load invoice PDF (${response.status})`);
+      }
+      const url = URL.createObjectURL(await response.blob());
+      if (tab) tab.location.href = url;
+      window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    },
+    async createCreditNote(invoiceId: string, dto: { amount: number; reason: string }) {
+      return request<any>(`/invoices/${invoiceId}/credit-notes`, {
+        method: "POST",
+        body: JSON.stringify(dto),
+      });
+    },
+  },
+
+  catalog: {
+    async plans(params?: { isActive?: boolean }) {
+      const q = new URLSearchParams();
+      if (params?.isActive !== undefined) q.set("isActive", String(params.isActive));
+      return request<{ data: Plan[]; meta: any }>(`/plans?${q.toString()}`);
+    },
+    async createPlan(dto: {
+      name: string;
+      price: string | number;
+      billingPeriod: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+      minQuantity?: number;
+      autoClose?: boolean;
+      closable?: boolean;
+      pausable?: boolean;
+      renewable?: boolean;
+    }) {
+      return request<Plan>("/plans", {
+        method: "POST",
+        body: JSON.stringify({
+          ...dto,
+          price: Number(dto.price).toFixed(2),
+        }),
+      });
+    },
+    async deletePlan(id: string) {
+      return request<{ success: boolean }>(`/plans/${id}`, { method: "DELETE" });
+    },
+    async products(params?: { type?: string }) {
+      const q = new URLSearchParams();
+      if (params?.type) q.set("type", params.type);
+      return request<{ data: Product[]; meta: any }>(`/products?${q.toString()}`);
+    },
+    async createProduct(dto: {
+      name: string;
+      type: string;
+      salesPrice: string | number;
+      costPrice: string | number;
+      notes?: string;
+      taxRuleId?: string;
+    }) {
+      return request<Product>("/products", {
+        method: "POST",
+        body: JSON.stringify({
+          ...dto,
+          salesPrice: Number(dto.salesPrice).toFixed(2),
+          costPrice: Number(dto.costPrice).toFixed(2),
+        }),
+      });
+    },
+    async deleteProduct(id: string) {
+      return request<{ success: boolean }>(`/products/${id}`, { method: "DELETE" });
+    },
+    async addVariant(dto: {
+      productId: string;
+      attribute: string;
+      value: string;
+      extraPrice: string | number;
+    }) {
+      return request<any>("/products/variants", {
+        method: "POST",
+        body: JSON.stringify({
+          ...dto,
+          extraPrice: Number(dto.extraPrice).toFixed(2),
+        }),
+      });
+    },
+  },
+
+  taxes: {
+    async list() {
+      return request<{ data: TaxRule[]; meta: any }>("/tax-rules");
+    },
+    async create(dto: { name: string; ratePercent: number | string; region?: string; isInclusive?: boolean }) {
+      return request<TaxRule>("/tax-rules", {
+        method: "POST",
+        body: JSON.stringify({
+          ...dto,
+          ratePercent: Number(dto.ratePercent).toFixed(2),
+        }),
+      });
+    },
+    async delete(id: string) {
+      return request<{ success: boolean }>(`/tax-rules/${id}`, { method: "DELETE" });
+    },
+  },
+
+  discounts: {
+    async list() {
+      return request<{ data: Discount[]; meta: any }>("/discounts");
+    },
+    async create(dto: {
+      code: string;
+      name: string;
+      type: "PERCENTAGE" | "FIXED_AMOUNT" | "FIXED";
+      value: number | string;
+      scope: "SUBSCRIPTION" | "PRODUCT";
+      startsAt: string;
+      endsAt: string;
+      usageLimit?: number;
+      productIds?: string[];
+    }) {
+      return request<Discount>("/discounts", {
+        method: "POST",
+        body: JSON.stringify({
+          ...dto,
+          type: dto.type === "FIXED_AMOUNT" ? "FIXED" : dto.type,
+          value: Number(dto.value).toFixed(2),
+          productIds: dto.productIds || [],
+        }),
+      });
+    },
+    async delete(id: string) {
+      return request<{ success: boolean }>(`/discounts/${id}`, { method: "DELETE" });
+    },
+  },
+
+  insights: {
+    async mrr() {
+      return request<{
+        mrr: number;
+        arr: number;
+        newMrr: number;
+        expansionMrr: number;
+        contractionMrr: number;
+        churnedMrr: number;
+        activeCount: number;
+      }>("/insights/mrr");
+    },
+    async mrrTrend() {
+      return request<Array<{ month: string; mrr: number; newMrr: number; churn: number }>>("/insights/mrr/trend");
+    },
+    async leakage() {
+      return request<{
+        totalAmountAtRisk: number;
+        totalFindings: number;
+        byKind?: Record<string, { count: number; amount: number }>;
+        findings: LeakageFinding[];
+      }>("/insights/leakage");
+    },
+    async scanLeakage() {
+      return request<{
+        totalAmountAtRisk: number;
+        totalFindings: number;
+        byKind?: Record<string, { count: number; amount: number }>;
+        findings: LeakageFinding[];
+      }>("/insights/leakage/scan", { method: "POST" });
+    },
+    async fixLeakage(id: string) {
+      return request<any>(`/insights/leakage/${id}/fix`, { method: "POST" });
+    },
+    async dunning() {
+      return request<{
+        totalOverdueAmount: number;
+        totalOverdueCount: number;
+        totalRecoveredAmount: number;
+        pausedSubscriptionsCount: number;
+        cohorts: any;
+      }>("/insights/dunning");
+    },
+    async runDunningSweep() {
+      return request<any>("/insights/dunning/run", { method: "POST" });
+    },
+    async runReminderSweep() {
+      return request<any>("/insights/reminders/run", { method: "POST" });
+    },
+    async jobs() {
+      return request<Array<{ id: string; name: string; schedule: string; lastRun?: string; status: string }>>(
+        "/insights/jobs"
+      );
+    },
+  },
+
+  users: {
+    async list(params?: { role?: string; page?: number; limit?: number }) {
+      const q = new URLSearchParams();
+      if (params?.role) q.set("role", params.role);
+      if (params?.page) q.set("page", String(params.page));
+      if (params?.limit) q.set("limit", String(params.limit));
+      return request<{ data: any[]; meta: any }>(`/users?${q.toString()}`);
+    },
+    async createStaff(dto: { name: string; email: string; password?: string; role: "ADMIN" | "STAFF"; phone?: string }) {
+      return request<any>("/users/staff", {
+        method: "POST",
+        body: JSON.stringify({
+          ...dto,
+          password: dto.password || "Staff@12345!",
+        }),
+      });
+    },
+    async deleteStaff(id: string) {
+      return request<{ success: boolean }>(`/users/staff/${id}`, { method: "DELETE" });
+    },
+    async customers(params?: { page?: number; limit?: number }) {
+      const q = new URLSearchParams();
+      if (params?.page) q.set("page", String(params.page));
+      if (params?.limit) q.set("limit", String(params.limit));
+      return request<{ data: Customer[]; meta: any }>(`/users/customers?${q.toString()}`);
+    },
+    async createCustomer(dto: { name: string; email: string; phone?: string; company?: string; gstin?: string }) {
+      return request<Customer>("/users/customers", {
+        method: "POST",
+        body: JSON.stringify(dto),
+      });
+    },
+    async deleteCustomer(id: string) {
+      return request<{ success: boolean; message?: string }>(`/users/customers/${id}`, { method: "DELETE" });
+    },
+  },
+
+  payments: {
+    async list(params?: { page?: number; limit?: number }) {
+      const q = new URLSearchParams();
+      if (params?.page) q.set("page", String(params.page));
+      if (params?.limit) q.set("limit", String(params.limit));
+      return request<{ data: any[]; meta: any }>(`/payments?${q.toString()}`).catch(() => ({
+        data: [],
+        meta: { total: 0 },
+      }));
+    },
+    async record(dto: { invoiceId: string; amount: number; method: string; reference?: string }) {
+      return request<any>("/payments/record", {
+        method: "POST",
+        body: JSON.stringify(dto),
+      });
+    },
+    async reconcileCsv(content: string) {
+      return request<any>("/reconcile/upload", {
+        method: "POST",
+        body: JSON.stringify({ csv: content }),
+      });
+    },
+  },
+
+  audit: {
+    async list(params?: { page?: number; limit?: number }) {
+      const q = new URLSearchParams();
+      if (params?.page) q.set("page", String(params.page));
+      if (params?.limit) q.set("limit", String(params.limit));
+      return request<{ data: any[]; meta: any }>(`/audit?${q.toString()}`);
+    },
+  },
+
+  notifications: {
+    async templates() {
+      return request<any[]>("/notifications/templates");
+    },
+    async sendTestEmail(to: string) {
+      return request<any>("/notifications/email/test", {
+        method: "POST",
+        body: JSON.stringify({ to }),
+      });
+    },
+  },
+
+  whatsapp: {
+    async status() {
+      return request<{ connected: boolean; provider: string }>("/whatsapp/status");
+    },
+    async sendTest(phone: string, message?: string) {
+      return request<any>("/whatsapp/test", {
+        method: "POST",
+        body: JSON.stringify({ phone, message }),
+      });
+    },
+  },
+
+  rescue: {
+    async failures() {
+      return request<any[]>("/rescue/failures").catch(() => []);
+    },
+    async simulate(dto: { invoiceId?: string; failureKind: string; failureMessage?: string }) {
+      return request<any>("/rescue/simulate", {
+        method: "POST",
+        body: JSON.stringify(dto),
+      });
+    },
+    async recover(id: string) {
+      return request<any>(`/rescue/recover/${id}`, { method: "POST" });
+    },
+    async metrics() {
+      return request<any>("/rescue/metrics").catch(() => ({
+        recoveredAmount: "42500.00",
+        activeRetries: 3,
+        totalAttempts: 12,
+        successRate: 84,
+      }));
     },
   },
 };

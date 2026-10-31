@@ -44,7 +44,15 @@ export class BillingService implements IInvoiceService {
     const { skip, take } = parsePagination(params);
     const where: any = {};
     if (params.customerId) where.customerId = params.customerId;
-    if (params.status) where.status = params.status;
+    if (params.status === 'OVERDUE') {
+      where.status = 'CONFIRMED';
+      where.amountDue = { gt: 0 };
+      where.dueDate = { lt: new Date() };
+    } else if (params.status === 'PAID') {
+      where.OR = [{ status: 'PAID' }, { amountDue: { lte: 0 } }];
+    } else if (params.status) {
+      where.status = params.status;
+    }
 
     const [invoices, total] = await Promise.all([
       this.prisma.invoice.findMany({
@@ -52,7 +60,16 @@ export class BillingService implements IInvoiceService {
         skip,
         take,
         orderBy: { issueDate: 'desc' },
-        include: { lines: true, creditMemos: true },
+        include: {
+          lines: true,
+          creditMemos: true,
+          subscription: {
+            select: {
+              number: true,
+              customer: { select: { id: true, name: true, email: true } },
+            },
+          },
+        },
       }),
       this.prisma.invoice.count({ where }),
     ]);
@@ -78,6 +95,8 @@ export class BillingService implements IInvoiceService {
         number: inv.number,
         subscriptionId: inv.subscriptionId,
         customerId: inv.customerId,
+        customer: inv.subscription.customer,
+        subscription: inv.subscription,
         status: inv.status,
         displayStatus,
         periodStart: inv.periodStart.toISOString(),
@@ -87,7 +106,9 @@ export class BillingService implements IInvoiceService {
         sentAt: inv.sentAt ? inv.sentAt.toISOString() : null,
         subtotal: inv.subtotal.toFixed(2),
         discountTotal: inv.discountTotal.toFixed(2),
+        discountAmount: inv.discountTotal.toFixed(2),
         taxTotal: inv.taxTotal.toFixed(2),
+        taxAmount: inv.taxTotal.toFixed(2),
         total: inv.total.toFixed(2),
         amountPaid: inv.amountPaid.toFixed(2),
         amountDue: inv.amountDue.toFixed(2),

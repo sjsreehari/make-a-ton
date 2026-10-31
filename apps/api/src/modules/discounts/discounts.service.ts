@@ -18,7 +18,7 @@ export class DiscountsService {
       this.prisma.discount.findMany({
         skip,
         take,
-        orderBy: { createdAt: 'desc' } as any,
+        orderBy: { startsAt: 'desc' },
       }),
       this.prisma.discount.count(),
     ]);
@@ -66,5 +66,23 @@ export class DiscountsService {
 
     return discount;
   }
-}
 
+  async delete(id: string, actorId: string) {
+    try {
+      const deleted = await this.prisma.discount.delete({ where: { id } });
+      await this.audit.log({
+        actor: { id: actorId, role: 'ADMIN' },
+        entity: 'Discount',
+        entityId: id,
+        action: 'DISCOUNT_DELETED',
+      });
+      return { success: true, deleted };
+    } catch {
+      const deactivated = await this.prisma.discount.update({
+        where: { id },
+        data: { isActive: false },
+      });
+      return { success: true, deactivated };
+    }
+  }
+}

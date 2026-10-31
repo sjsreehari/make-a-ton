@@ -22,12 +22,16 @@ export class EventBusService {
 
     // 2. Durable asynchronous background dispatch via BullMQ
     try {
-      await this.queue.add(event, payload, {
+      const enqueue = this.queue.add(event, payload, {
         attempts: 3,
         backoff: { type: 'exponential', delay: 2000 },
         removeOnComplete: 1000,
         removeOnFail: 5000,
       });
+      await Promise.race([
+        enqueue,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Queue timeout (Redis offline)')), 400)),
+      ]);
     } catch (err: unknown) {
       this.logger.warn(`Could not enqueue event ${event} to BullMQ: ${(err as Error).message}`);
     }
@@ -35,4 +39,3 @@ export class EventBusService {
     this.logger.log(`Domain event emitted: ${event}`);
   }
 }
-

@@ -209,13 +209,17 @@ export class TemplatesService implements OnModuleInit {
   constructor(private readonly prisma: PrismaService) {}
 
   async onModuleInit() {
-    await this.seedDefaultTemplates();
+    try {
+      await this.seedDefaultTemplates();
+    } catch (err: any) {
+      this.logger.warn("Could not seed message templates at init: " + (err?.message || err));
+    }
   }
 
   async seedDefaultTemplates() {
     for (const t of DEFAULT_TEMPLATES) {
       const existing = await this.prisma.messageTemplate.findFirst({
-        where: { key: t.key, channel: t.channel as any },
+        where: { key: t.key },
       });
       if (!existing) {
         await this.prisma.messageTemplate.create({

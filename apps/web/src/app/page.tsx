@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { MarketingNavbar } from "@/components/marketing/Navbar";
 import { MarketingFooter } from "@/components/marketing/Footer";
+import { TypewriterHero } from "@/components/mascot/TypewriterHero";
 import {
   Zap,
   ArrowRight,
@@ -105,57 +106,20 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#fbfbfa] text-[#1c1b1a] selection:bg-[#dc4a22]/20 font-sans antialiased overflow-x-hidden">
       <MarketingNavbar />
 
-      {/* Hero Section with Cute Mascot */}
-      <section className="pt-16 pb-14 px-4 sm:px-6 max-w-4xl mx-auto text-center">
-        {/* Cute Mascot Stool Illustration */}
-        <div className="flex justify-center mb-6">
-          <div className="relative group">
-            {/* Mascot Character Representation */}
-            <div className="size-20 rounded-full bg-gradient-to-tr from-[#dc4a22] via-[#e55931] to-[#f2744c] flex items-center justify-center shadow-xl shadow-[#dc4a22]/25 relative mx-auto transform transition-transform group-hover:scale-105 duration-300">
-              {/* Cute Eyes & Smile */}
-              <div className="flex items-center gap-3 relative z-10">
-                <div className="size-3 rounded-full bg-[#1c1b1a] flex items-center justify-center">
-                  <div className="size-1 rounded-full bg-white ml-0.5 mb-0.5" />
-                </div>
-                <div className="size-3 rounded-full bg-[#1c1b1a] flex items-center justify-center">
-                  <div className="size-1 rounded-full bg-white ml-0.5 mb-0.5" />
-                </div>
-              </div>
-              <div className="absolute bottom-4 w-3.5 h-1.5 rounded-full border-b-2 border-[#1c1b1a]" />
-              {/* Cute Pilot Earflap / Wings */}
-              <div className="absolute -left-1.5 top-6 size-3.5 rounded-full bg-[#b83815]" />
-              <div className="absolute -right-1.5 top-6 size-3.5 rounded-full bg-[#b83815]" />
-            </div>
-
-            {/* Little Stool Legs */}
-            <div className="flex justify-center gap-4 -mt-2">
-              <div className="w-1.5 h-6 bg-[#d1cfc7] rounded-full transform -rotate-12" />
-              <div className="w-1.5 h-6 bg-[#d1cfc7] rounded-full" />
-              <div className="w-1.5 h-6 bg-[#d1cfc7] rounded-full transform rotate-12" />
-            </div>
-
-            {/* Decorative Floating Coins */}
-            <div className="absolute -left-10 top-4 size-6 rounded-full bg-[#f4ebcf] border border-[#d9ceab] flex items-center justify-center text-[10px] font-mono font-bold text-[#8c783e] shadow-sm">
-              ₹
-            </div>
-            <div className="absolute -right-8 top-8 size-5 rounded-full bg-[#f4ebcf] border border-[#d9ceab] flex items-center justify-center text-[9px] font-mono font-bold text-[#8c783e] shadow-sm">
-              ₹
-            </div>
-          </div>
-        </div>
-
-        {/* Hero Headline in Editorial Serif */}
-        <h1 className="text-4xl sm:text-6xl font-serif tracking-tight text-[#1c1b1a] leading-[1.1] mb-5 font-normal">
-          Turn your subscription team <br className="hidden sm:inline" />
-          into a <span className="italic font-serif font-medium text-[#dc4a22]">revenue factory</span>
-        </h1>
-
-        <p className="text-sm sm:text-base text-[#6e6d6a] max-w-2xl mx-auto leading-relaxed mb-8">
-          We removed every manual step in the billing month, from the quote to the cash in the bank. Automated idempotent invoices, WhatsApp dunning, and AI finance assistant.
-        </p>
+      {/* Hero Section with Interactive Cursor-Following Mascot & Typewriter */}
+      <section className="pt-16 pb-16 px-4 sm:px-6 max-w-4xl mx-auto text-center">
+        <TypewriterHero
+          words={[
+            "Subscription Engine",
+            "Automated Billing Pilot",
+            "Revenue Operations Hub",
+            "Invoice Automation Engine",
+          ]}
+          subtitle="BillPilot automates your recurring subscriptions, generates idempotent invoices, and eliminates revenue leaks from quote to cash in the bank."
+        />
 
         {/* Hero Buttons */}
-        <div className="flex items-center justify-center gap-3 mb-14">
+        <div className="flex items-center justify-center gap-3">
           <Link
             href="/portal"
             className="px-5 py-2.5 rounded-full text-xs font-semibold bg-white border border-[#d9d9d4] hover:bg-[#f2f2ee] text-[#1c1b1a] shadow-sm transition-all"
@@ -169,41 +133,6 @@ export default function LandingPage() {
             <span>Launch Operations</span>
             <ArrowRight className="size-3.5" />
           </Link>
-        </div>
-
-        {/* Trusted By Strip */}
-        <p className="text-[11px] font-mono text-[#8c8b87] uppercase tracking-wider mb-4">
-          Trusted by high-growth recurring software teams at Brightloop
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs font-semibold text-[#8c8b87] mb-12">
-          <span>Apex Global Ltd</span>
-          <span>Zenith Infotech</span>
-          <span>Bright Digital</span>
-          <span>CloudNative Labs</span>
-          <span>HyperScale Tech</span>
-          <span>Acme Logistics</span>
-        </div>
-
-        {/* Floating Pill Statistics Box */}
-        <div className="rounded-2xl border border-[#e8e8e3] bg-white shadow-xl shadow-[#1c1b1a]/5 p-6 sm:p-8">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center divide-y sm:divide-y-0 sm:divide-x divide-[#e8e8e3]">
-            <div className="pt-2 sm:pt-0">
-              <span className="text-3xl font-serif font-bold text-[#1c1b1a] block">2M+</span>
-              <span className="text-[11px] text-[#6e6d6a] mt-1 block">Invoices Processed</span>
-            </div>
-            <div className="pt-4 sm:pt-0 sm:pl-4">
-              <span className="text-3xl font-serif font-bold text-[#1c1b1a] block">25K+</span>
-              <span className="text-[11px] text-[#6e6d6a] mt-1 block">Active Subscriptions</span>
-            </div>
-            <div className="pt-4 sm:pt-0 sm:pl-4">
-              <span className="text-3xl font-serif font-bold text-[#dc4a22] block">100%</span>
-              <span className="text-[11px] text-[#6e6d6a] mt-1 block">Zero Duplicate Billing</span>
-            </div>
-            <div className="pt-4 sm:pt-0 sm:pl-4">
-              <span className="text-3xl font-serif font-bold text-[#1c1b1a] block">8002</span>
-              <span className="text-[11px] text-[#6e6d6a] mt-1 block">Bank CSV Reconciliations</span>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -260,7 +189,7 @@ export default function LandingPage() {
               OPERATIONAL VELOCITY
             </span>
             <h2 className="text-3xl sm:text-4xl font-serif font-normal text-[#1c1b1a] leading-tight">
-              Turn AI adoption into engineering output.
+              Turn recurring billing friction into automated velocity.
             </h2>
             <p className="text-xs text-[#6e6d6a] leading-relaxed">
               Every state change writes an immutable audit record and fires a typed domain event. Automated schedulers close expired contracts, trigger 7-day dunning notices, and auto-reconcile bank transfers.
@@ -362,15 +291,15 @@ export default function LandingPage() {
               UNIT ECONOMICS & MARGINS
             </span>
             <h2 className="text-3xl sm:text-4xl font-serif font-normal text-[#1c1b1a] leading-tight">
-              Get more output from every AI dollar.
+              Maximize gross margin on every recurring contract.
             </h2>
             <p className="text-xs text-[#6e6d6a] leading-relaxed">
               Every plan and product variant maintains real-time cost versus sales price visibility. The margin-aware discount simulator blocks coupons below minimum profitability thresholds.
             </p>
             <div className="flex gap-6 pt-2">
               <div>
-                <span className="text-2xl font-serif font-bold text-[#1c1b1a] block">60M+</span>
-                <span className="text-[10px] font-mono text-[#8c8b87]">Total API Invocations</span>
+                <span className="text-2xl font-serif font-bold text-[#1c1b1a] block">₹42M+</span>
+                <span className="text-[10px] font-mono text-[#8c8b87]">Gross Billed Volume</span>
               </div>
               <div>
                 <span className="text-2xl font-serif font-bold text-[#1c1b1a] block">25K</span>
@@ -436,7 +365,7 @@ export default function LandingPage() {
             TRANSPARENT BILL MATH
           </span>
           <h2 className="text-3xl sm:text-4xl font-serif font-normal text-[#1c1b1a] leading-tight">
-            Match every prompt to the right model. Match every bill to the right payment.
+            Match every invoice line to exact customer usage and tier pricing.
           </h2>
           <p className="text-xs text-[#6e6d6a] mt-2">
             No more customers calling support asking &quot;why is my bill this amount?&quot;. Transparent math stepper pre-calculated dynamically.
@@ -532,7 +461,7 @@ export default function LandingPage() {
       {/* Section 5: Mascot Lineup & WhatsApp Bot */}
       <section className="py-16 px-4 sm:px-6 max-w-4xl mx-auto text-center border-t border-[#e8e8e3]">
         <h2 className="text-2xl sm:text-3xl font-serif text-[#1c1b1a] mb-2 font-normal">
-          Agent Weekly & WhatsApp Billing Bot
+          Omnichannel WhatsApp Invoicing & Billing Bot
         </h2>
         <p className="text-xs text-[#6e6d6a] mb-8">
           Customers manage balances, renew contracts, and download invoices directly from WhatsApp.

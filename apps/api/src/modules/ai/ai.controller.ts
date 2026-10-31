@@ -1,5 +1,5 @@
-import { Controller, Post, Body, Param, Sse, UseGuards } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import { Controller, Post, Body, Param, UseGuards, Res, HttpCode, HttpStatus } from '@nestjs/common';
+import { Response } from 'express';
 import { AiService } from './ai.service';
 import { ChatRequestDto, SseEvent } from './ai.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -12,14 +12,31 @@ export class AiController {
   constructor(private readonly aiService: AiService) {}
 
   @Post('chat')
-  @Sse()
-  chat(@Body() dto: ChatRequestDto, @CurrentUser() user: JwtPayload): Observable<{ data: SseEvent }> {
-    return this.aiService.streamChat(dto, {
+  @HttpCode(HttpStatus.OK)
+  chat(@Body() dto: ChatRequestDto, @CurrentUser() user: JwtPayload, @Res() response: Response): void {
+    response.set({
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no',
+    });
+    response.flushHeaders();
+
+    const subscription = this.aiService.streamChat(dto, {
       userId: user.sub,
       role: user.role,
       email: user.email,
       customerId: user.customerId,
+    }).subscribe({
+      next: (event) => response.write(`data: ${JSON.stringify(event.data)}\n\n`),
+      error: () => {
+        response.write(`data: ${JSON.stringify({ type: 'state', value: 'oops' } satisfies SseEvent)}\n\n`);
+        response.end();
+      },
+      complete: () => response.end(),
     });
+
+    response.on('close', () => subscription.unsubscribe());
   }
 
   @Post('proposals/:id/confirm')

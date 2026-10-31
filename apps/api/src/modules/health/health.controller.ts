@@ -14,7 +14,7 @@ export class HealthController {
 
   @Get()
   @Public()
-  @ApiOperation({ summary: 'System health check (PostgreSQL + Redis)' })
+  @ApiOperation({ summary: 'System health check (MySQL + Redis)' })
   async getHealth() {
     const [dbOk, redisOk] = await Promise.all([
       this.prisma.$queryRaw`SELECT 1`.then(() => true).catch(() => false),

@@ -23,7 +23,7 @@ export class AuthService {
     // Check uniqueness (case-insensitive)
     const existing = await this.prisma.user.findFirst({
       where: {
-        email: { equals: normalizedEmail, mode: 'insensitive' },
+        email: normalizedEmail,
       },
     });
 
@@ -81,7 +81,7 @@ export class AuthService {
 
     const user = await this.prisma.user.findFirst({
       where: {
-        email: { equals: normalizedEmail, mode: 'insensitive' },
+        email: normalizedEmail,
       },
     });
 
@@ -120,7 +120,7 @@ export class AuthService {
 
     const user = await this.prisma.user.findFirst({
       where: {
-        email: { equals: normalizedEmail, mode: 'insensitive' },
+        email: normalizedEmail,
       },
     });
 

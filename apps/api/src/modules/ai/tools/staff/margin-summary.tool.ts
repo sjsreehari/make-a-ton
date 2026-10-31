@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ITool, ToolResult } from '../tool.interface';
-import { PrismaService } from '../../../common/prisma/prisma.service';
+import { PrismaService } from '../../../../common/prisma/prisma.service';
 
 @Injectable()
 export class MarginSummaryTool implements ITool {

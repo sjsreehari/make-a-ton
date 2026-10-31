@@ -130,6 +130,25 @@ export class CatalogService {
     return plan;
   }
 
+  async deletePlan(id: string, actorId: string) {
+    try {
+      const deleted = await this.prisma.plan.delete({ where: { id } });
+      await this.audit.log({
+        actor: { id: actorId, role: 'ADMIN' },
+        entity: 'Plan',
+        entityId: id,
+        action: 'PLAN_DELETED',
+      });
+      return { success: true, deleted };
+    } catch {
+      const deactivated = await this.prisma.plan.update({
+        where: { id },
+        data: { isActive: false },
+      });
+      return { success: true, deactivated };
+    }
+  }
+
   async createProduct(dto: CreateProductDto, creatorId: string) {
     const product = await this.prisma.product.create({
       data: {
@@ -153,6 +172,25 @@ export class CatalogService {
     return product;
   }
 
+  async deleteProduct(id: string, actorId: string) {
+    try {
+      const deleted = await this.prisma.product.delete({ where: { id } });
+      await this.audit.log({
+        actor: { id: actorId, role: 'ADMIN' },
+        entity: 'Product',
+        entityId: id,
+        action: 'PRODUCT_DELETED',
+      });
+      return { success: true, deleted };
+    } catch {
+      const deactivated = await this.prisma.product.update({
+        where: { id },
+        data: { isActive: false },
+      });
+      return { success: true, deactivated };
+    }
+  }
+
   async addVariant(dto: CreateVariantDto, creatorId: string) {
     const variant = await this.prisma.variant.create({
       data: {
@@ -174,4 +212,3 @@ export class CatalogService {
     return variant;
   }
 }
-

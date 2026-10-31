@@ -99,7 +99,7 @@ model Discount {
   type              DiscountType
   value             Decimal         @db.Decimal(14, 2)
   scope             DiscountScope
-  productIds        String[]
+  productIds        Json?
   minPurchaseAmount Decimal?        @db.Decimal(14, 2)
   minQuantity       Int?
   startsAt          DateTime

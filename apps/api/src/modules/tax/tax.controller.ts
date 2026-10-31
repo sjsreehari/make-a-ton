@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -29,5 +29,11 @@ export class TaxController {
   ) {
     return this.taxService.create(dto, user.sub);
   }
-}
 
+  @Delete(':id')
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'Delete or deactivate tax rule (Admin only)' })
+  async delete(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.taxService.delete(id, user.sub);
+  }
+}
