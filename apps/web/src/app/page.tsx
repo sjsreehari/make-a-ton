@@ -107,19 +107,19 @@ export default function LandingPage() {
       <MarketingNavbar />
 
       {/* Hero Section with Interactive Cursor-Following Mascot & Typewriter */}
-      <section className="pt-16 pb-10 px-4 sm:px-6 max-w-4xl mx-auto text-center">
+      <section className="pt-16 pb-16 px-4 sm:px-6 max-w-4xl mx-auto text-center">
         <TypewriterHero
           words={[
-            "Task Prioritizer",
-            "Time Strategist",
-            "Billing Engine",
-            "Revenue Pilot",
+            "Subscription Engine",
+            "Automated Billing Pilot",
+            "Revenue Operations Hub",
+            "Invoice Automation Engine",
           ]}
-          subtitle="Toki reaches out and coordinates your meetings, architects your daily schedule, and prioritizes your most urgent tasks and deadlines."
+          subtitle="BillPilot automates your recurring subscriptions, generates idempotent invoices, and eliminates revenue leaks from quote to cash in the bank."
         />
 
         {/* Hero Buttons */}
-        <div className="flex items-center justify-center gap-3 mb-14">
+        <div className="flex items-center justify-center gap-3">
           <Link
             href="/portal"
             className="px-5 py-2.5 rounded-full text-xs font-semibold bg-white border border-[#d9d9d4] hover:bg-[#f2f2ee] text-[#1c1b1a] shadow-sm transition-all"
@@ -133,41 +133,6 @@ export default function LandingPage() {
             <span>Launch Operations</span>
             <ArrowRight className="size-3.5" />
           </Link>
-        </div>
-
-        {/* Trusted By Strip */}
-        <p className="text-[11px] font-mono text-[#8c8b87] uppercase tracking-wider mb-4">
-          Trusted by high-growth recurring software teams at Brightloop
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs font-semibold text-[#8c8b87] mb-12">
-          <span>Apex Global Ltd</span>
-          <span>Zenith Infotech</span>
-          <span>Bright Digital</span>
-          <span>CloudNative Labs</span>
-          <span>HyperScale Tech</span>
-          <span>Acme Logistics</span>
-        </div>
-
-        {/* Floating Pill Statistics Box */}
-        <div className="rounded-2xl border border-[#e8e8e3] bg-white shadow-xl shadow-[#1c1b1a]/5 p-6 sm:p-8">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center divide-y sm:divide-y-0 sm:divide-x divide-[#e8e8e3]">
-            <div className="pt-2 sm:pt-0">
-              <span className="text-3xl font-serif font-bold text-[#1c1b1a] block">2M+</span>
-              <span className="text-[11px] text-[#6e6d6a] mt-1 block">Invoices Processed</span>
-            </div>
-            <div className="pt-4 sm:pt-0 sm:pl-4">
-              <span className="text-3xl font-serif font-bold text-[#1c1b1a] block">25K+</span>
-              <span className="text-[11px] text-[#6e6d6a] mt-1 block">Active Subscriptions</span>
-            </div>
-            <div className="pt-4 sm:pt-0 sm:pl-4">
-              <span className="text-3xl font-serif font-bold text-[#dc4a22] block">100%</span>
-              <span className="text-[11px] text-[#6e6d6a] mt-1 block">Zero Duplicate Billing</span>
-            </div>
-            <div className="pt-4 sm:pt-0 sm:pl-4">
-              <span className="text-3xl font-serif font-bold text-[#1c1b1a] block">8002</span>
-              <span className="text-[11px] text-[#6e6d6a] mt-1 block">Bank CSV Reconciliations</span>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -224,7 +189,7 @@ export default function LandingPage() {
               OPERATIONAL VELOCITY
             </span>
             <h2 className="text-3xl sm:text-4xl font-serif font-normal text-[#1c1b1a] leading-tight">
-              Turn AI adoption into engineering output.
+              Turn recurring billing friction into automated velocity.
             </h2>
             <p className="text-xs text-[#6e6d6a] leading-relaxed">
               Every state change writes an immutable audit record and fires a typed domain event. Automated schedulers close expired contracts, trigger 7-day dunning notices, and auto-reconcile bank transfers.
@@ -326,15 +291,15 @@ export default function LandingPage() {
               UNIT ECONOMICS & MARGINS
             </span>
             <h2 className="text-3xl sm:text-4xl font-serif font-normal text-[#1c1b1a] leading-tight">
-              Get more output from every AI dollar.
+              Maximize gross margin on every recurring contract.
             </h2>
             <p className="text-xs text-[#6e6d6a] leading-relaxed">
               Every plan and product variant maintains real-time cost versus sales price visibility. The margin-aware discount simulator blocks coupons below minimum profitability thresholds.
             </p>
             <div className="flex gap-6 pt-2">
               <div>
-                <span className="text-2xl font-serif font-bold text-[#1c1b1a] block">60M+</span>
-                <span className="text-[10px] font-mono text-[#8c8b87]">Total API Invocations</span>
+                <span className="text-2xl font-serif font-bold text-[#1c1b1a] block">₹42M+</span>
+                <span className="text-[10px] font-mono text-[#8c8b87]">Gross Billed Volume</span>
               </div>
               <div>
                 <span className="text-2xl font-serif font-bold text-[#1c1b1a] block">25K</span>
@@ -400,7 +365,7 @@ export default function LandingPage() {
             TRANSPARENT BILL MATH
           </span>
           <h2 className="text-3xl sm:text-4xl font-serif font-normal text-[#1c1b1a] leading-tight">
-            Match every prompt to the right model. Match every bill to the right payment.
+            Match every invoice line to exact customer usage and tier pricing.
           </h2>
           <p className="text-xs text-[#6e6d6a] mt-2">
             No more customers calling support asking &quot;why is my bill this amount?&quot;. Transparent math stepper pre-calculated dynamically.
@@ -496,7 +461,7 @@ export default function LandingPage() {
       {/* Section 5: Mascot Lineup & WhatsApp Bot */}
       <section className="py-16 px-4 sm:px-6 max-w-4xl mx-auto text-center border-t border-[#e8e8e3]">
         <h2 className="text-2xl sm:text-3xl font-serif text-[#1c1b1a] mb-2 font-normal">
-          Agent Weekly & WhatsApp Billing Bot
+          Omnichannel WhatsApp Invoicing & Billing Bot
         </h2>
         <p className="text-xs text-[#6e6d6a] mb-8">
           Customers manage balances, renew contracts, and download invoices directly from WhatsApp.
