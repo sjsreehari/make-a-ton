@@ -23,11 +23,10 @@ import {
   UserCheck,
   Settings,
   LogOut,
-  Zap,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect, type ReactNode } from "react";
+import { type ReactNode } from "react";
 
 interface NavItem {
   href: string;
@@ -65,7 +64,7 @@ const NAV_SECTIONS: NavSection[] = [
     title: "AI & AUTOMATION",
     items: [
       { href: "/ai-assistant", label: "AI Assistant", icon: <Bot size={15} />, badge: "AI", badgeVariant: "brand" },
-      { href: "/leakage", label: "Leakage Detector", icon: <AlertTriangle size={15} />, badge: "₹84k", badgeVariant: "danger" },
+      { href: "/leakage", label: "Leakage Detector", icon: <AlertTriangle size={15} /> },
       { href: "/payment-rescue", label: "Payment Rescue", icon: <LifeBuoy size={15} /> },
       { href: "/communications", label: "WhatsApp & Comms", icon: <MessageSquare size={15} /> },
     ],
@@ -87,7 +86,6 @@ function NavLink({ item }: { item: NavItem }) {
     <Link
       href={item.href}
       aria-selected={active}
-      title={item.label}
       className={cn(
         "relative flex h-8 w-full items-center justify-between rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-all",
         "hover:bg-foreground/5 hover:text-foreground",
@@ -116,11 +114,6 @@ function NavLink({ item }: { item: NavItem }) {
 
 export function Sidebar() {
   const router = useRouter();
-  const [loadTime, setLoadTime] = useState(148);
-
-  useEffect(() => {
-    setLoadTime(Math.floor(130 + Math.random() * 40));
-  }, []);
 
   async function handleSignOut() {
     try {
@@ -150,16 +143,8 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Footer with latency badge and profile controls */}
+      {/* Account controls */}
       <div className="relative z-10 flex w-full flex-col gap-2 p-2 border-t border-border/60 bg-card/40">
-        <div className="hidden md:flex items-center justify-between px-2 py-1 rounded bg-zinc-900/60 border border-zinc-800 text-[11px] text-zinc-400">
-          <span className="flex items-center gap-1.5 font-mono text-[10px]">
-            <Zap className="size-3 text-emerald-400" />
-            <span suppressHydrationWarning>Loaded in {loadTime}ms</span>
-          </span>
-          <span className="inline-block size-1.5 rounded-full bg-emerald-500 animate-pulse" />
-        </div>
-
         <div className="flex w-full items-center justify-between gap-2">
           <Tooltip content="Settings & Staff" side="right" interactiveChild>
             <Button
