@@ -207,3 +207,4 @@ export function generateInvoicePdfBuffer(data: PdfInvoiceData): Promise<Buffer> 
     doc.end();
   });
 }
+

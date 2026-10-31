@@ -31,3 +31,4 @@ describe('TemplatesService - Variable Substitution and Validation', () => {
     expect(preview.detectedVariables).toContain('total');
   });
 });
+

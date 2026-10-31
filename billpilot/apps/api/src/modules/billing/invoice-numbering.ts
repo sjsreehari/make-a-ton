@@ -84,3 +84,4 @@ export function deriveInvoiceDisplayStatus(
 
   return 'DRAFT';
 }
+

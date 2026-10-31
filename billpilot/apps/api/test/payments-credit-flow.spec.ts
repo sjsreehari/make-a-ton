@@ -68,3 +68,4 @@ describe('Payments & Credit Notes Workflow', () => {
     expect(excessCredit.toFixed(2)).toBe('100.00');
   });
 });
+

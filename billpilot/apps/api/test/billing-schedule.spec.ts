@@ -79,3 +79,4 @@ describe('BillingSchedule - Recurring Billing Calculations', () => {
     expect(preview[2].toISOString().substring(0, 10)).toBe('2026-04-30');
   });
 });
+

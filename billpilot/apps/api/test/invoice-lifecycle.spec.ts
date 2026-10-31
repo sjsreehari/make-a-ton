@@ -75,3 +75,4 @@ describe('InvoiceLifecycle - Status Derivation and Numbering Patterns', () => {
     expect(reversedStatus).toBe('REVERSED');
   });
 });
+

@@ -102,3 +102,4 @@ describe('BillingCalculator - Taxes and Discounts Matrix', () => {
     expect(result.total.toFixed(2)).toBe('79.00');
   });
 });
+
