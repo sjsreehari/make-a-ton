@@ -11,14 +11,14 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Weave Router",
-  description: "Router dashboard and settings",
+  title: "BillPilot — Automated Subscription Management",
+  description: "Subscription lifecycle, automated invoicing, payments, and AI finance operations for Brightloop Software",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="h-screen overflow-hidden font-sans antialiased">
+    <html lang="en" className={`dark ${inter.variable}`}>
+      <body className="h-screen overflow-hidden font-sans antialiased bg-background text-foreground">
         <TooltipProvider>{children}</TooltipProvider>
       </body>
     </html>

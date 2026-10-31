@@ -1,0 +1,23 @@
+# Operating System files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+
+# IDE & Editor files
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+
+# Environment & Secrets
+.env
+.env*.local
+!.env.example
+
