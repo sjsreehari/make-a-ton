@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { MarketingNavbar } from "@/components/marketing/Navbar";
 import { MarketingFooter } from "@/components/marketing/Footer";
+import { TypewriterHero } from "@/components/mascot/TypewriterHero";
 import {
   Zap,
   ArrowRight,
@@ -105,54 +106,17 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#fbfbfa] text-[#1c1b1a] selection:bg-[#dc4a22]/20 font-sans antialiased overflow-x-hidden">
       <MarketingNavbar />
 
-      {/* Hero Section with Cute Mascot */}
-      <section className="pt-16 pb-14 px-4 sm:px-6 max-w-4xl mx-auto text-center">
-        {/* Cute Mascot Stool Illustration */}
-        <div className="flex justify-center mb-6">
-          <div className="relative group">
-            {/* Mascot Character Representation */}
-            <div className="size-20 rounded-full bg-gradient-to-tr from-[#dc4a22] via-[#e55931] to-[#f2744c] flex items-center justify-center shadow-xl shadow-[#dc4a22]/25 relative mx-auto transform transition-transform group-hover:scale-105 duration-300">
-              {/* Cute Eyes & Smile */}
-              <div className="flex items-center gap-3 relative z-10">
-                <div className="size-3 rounded-full bg-[#1c1b1a] flex items-center justify-center">
-                  <div className="size-1 rounded-full bg-white ml-0.5 mb-0.5" />
-                </div>
-                <div className="size-3 rounded-full bg-[#1c1b1a] flex items-center justify-center">
-                  <div className="size-1 rounded-full bg-white ml-0.5 mb-0.5" />
-                </div>
-              </div>
-              <div className="absolute bottom-4 w-3.5 h-1.5 rounded-full border-b-2 border-[#1c1b1a]" />
-              {/* Cute Pilot Earflap / Wings */}
-              <div className="absolute -left-1.5 top-6 size-3.5 rounded-full bg-[#b83815]" />
-              <div className="absolute -right-1.5 top-6 size-3.5 rounded-full bg-[#b83815]" />
-            </div>
-
-            {/* Little Stool Legs */}
-            <div className="flex justify-center gap-4 -mt-2">
-              <div className="w-1.5 h-6 bg-[#d1cfc7] rounded-full transform -rotate-12" />
-              <div className="w-1.5 h-6 bg-[#d1cfc7] rounded-full" />
-              <div className="w-1.5 h-6 bg-[#d1cfc7] rounded-full transform rotate-12" />
-            </div>
-
-            {/* Decorative Floating Coins */}
-            <div className="absolute -left-10 top-4 size-6 rounded-full bg-[#f4ebcf] border border-[#d9ceab] flex items-center justify-center text-[10px] font-mono font-bold text-[#8c783e] shadow-sm">
-              ₹
-            </div>
-            <div className="absolute -right-8 top-8 size-5 rounded-full bg-[#f4ebcf] border border-[#d9ceab] flex items-center justify-center text-[9px] font-mono font-bold text-[#8c783e] shadow-sm">
-              ₹
-            </div>
-          </div>
-        </div>
-
-        {/* Hero Headline in Editorial Serif */}
-        <h1 className="text-4xl sm:text-6xl font-serif tracking-tight text-[#1c1b1a] leading-[1.1] mb-5 font-normal">
-          Turn your subscription team <br className="hidden sm:inline" />
-          into a <span className="italic font-serif font-medium text-[#dc4a22]">revenue factory</span>
-        </h1>
-
-        <p className="text-sm sm:text-base text-[#6e6d6a] max-w-2xl mx-auto leading-relaxed mb-8">
-          We removed every manual step in the billing month, from the quote to the cash in the bank. Automated idempotent invoices, WhatsApp dunning, and AI finance assistant.
-        </p>
+      {/* Hero Section with Interactive Cursor-Following Mascot & Typewriter */}
+      <section className="pt-16 pb-10 px-4 sm:px-6 max-w-4xl mx-auto text-center">
+        <TypewriterHero
+          words={[
+            "Task Prioritizer",
+            "Time Strategist",
+            "Billing Engine",
+            "Revenue Pilot",
+          ]}
+          subtitle="Toki reaches out and coordinates your meetings, architects your daily schedule, and prioritizes your most urgent tasks and deadlines."
+        />
 
         {/* Hero Buttons */}
         <div className="flex items-center justify-center gap-3 mb-14">
