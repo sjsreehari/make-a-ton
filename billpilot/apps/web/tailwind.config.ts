@@ -11,61 +11,61 @@ const config: Config = {
   ],
   plugins: [tailwindcssAnimate, containerQueries],
   theme: {
-    colors: {
-      transparent: "transparent",
-      accent: {
-        DEFAULT: "hsl(var(--accent))",
-        foreground: "hsl(var(--accent-foreground))",
-      },
-      background: "hsl(var(--background))",
-      border: "hsl(var(--border))",
-      "border-darker": "hsl(var(--border-darker))",
-      brand: "hsl(var(--brand))",
-      card: {
-        DEFAULT: "hsl(var(--card))",
-        foreground: "hsl(var(--card-foreground))",
-      },
-      danger: {
-        DEFAULT: "hsl(var(--danger))",
-        foreground: "hsl(var(--danger-foreground))",
-      },
-      foreground: "hsl(var(--foreground))",
-      info: {
-        DEFAULT: "hsl(var(--info))",
-        foreground: "hsl(var(--info-foreground))",
-      },
-      input: "hsl(var(--input))",
-      muted: {
-        DEFAULT: "hsl(var(--muted))",
-        foreground: "hsl(var(--muted-foreground))",
-      },
-      popover: {
-        DEFAULT: "hsl(var(--popover))",
-        foreground: "hsl(var(--popover-foreground))",
-      },
-      primary: {
-        DEFAULT: "hsl(var(--primary))",
-        foreground: "hsl(var(--primary-foreground))",
-      },
-      ring: "hsl(var(--ring))",
-      shortcuts: "hsl(var(--shortcuts))",
-      "shortcuts-foreground": "hsl(var(--shortcuts-foreground))",
-      success: {
-        DEFAULT: "hsl(var(--success))",
-        foreground: "hsl(var(--success-foreground))",
-      },
-      tooltip: {
-        DEFAULT: "hsl(var(--tooltip))",
-        foreground: "hsl(var(--tooltip-foreground))",
-      },
-      warning: {
-        DEFAULT: "hsl(var(--warning))",
-        foreground: "hsl(var(--warning-foreground))",
-      },
-    },
     extend: {
+      colors: {
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        background: "hsl(var(--background))",
+        border: "hsl(var(--border))",
+        "border-darker": "hsl(var(--border-darker))",
+        brand: "hsl(var(--brand))",
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+        danger: {
+          DEFAULT: "hsl(var(--danger))",
+          foreground: "hsl(var(--danger-foreground))",
+        },
+        foreground: "hsl(var(--foreground))",
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
+        input: "hsl(var(--input))",
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        ring: "hsl(var(--ring))",
+        shortcuts: "hsl(var(--shortcuts))",
+        "shortcuts-foreground": "hsl(var(--shortcuts-foreground))",
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        tooltip: {
+          DEFAULT: "hsl(var(--tooltip))",
+          foreground: "hsl(var(--tooltip-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+      },
       fontFamily: {
         sans: ["var(--font-inter)", "Inter", "system-ui", "sans-serif"],
+        serif: ["Georgia", "Cambria", "Times New Roman", "serif"],
         display: ["var(--font-inter-display)", "var(--font-inter)", "Inter", "system-ui", "sans-serif"],
       },
       fontSize: {
