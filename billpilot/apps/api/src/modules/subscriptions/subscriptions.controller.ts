@@ -44,6 +44,25 @@ export class SubscriptionsController {
     return this.subscriptionsService.findOne(id, customerId);
   }
 
+  @Get(':id/schedule-preview')
+  @Roles('ADMIN', 'STAFF', 'CUSTOMER')
+  @ApiOperation({ summary: 'Preview the next 3 invoice dates for a subscription' })
+  async previewSchedule(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    const customerId = user.role === 'CUSTOMER' ? user.customerId : undefined;
+    return this.subscriptionsService.previewSchedule(id, customerId);
+  }
+
+  @Post(':id/approve-quote')
+  @Roles('ADMIN', 'STAFF', 'CUSTOMER')
+  @ApiOperation({ summary: 'One-click quotation approval from client portal' })
+  async approveQuotation(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.subscriptionsService.approveQuotation(id, {
+      id: user.sub,
+      role: user.role,
+      customerId: user.customerId,
+    });
+  }
+
   @Post()
   @Roles('ADMIN', 'STAFF')
   @ApiOperation({ summary: 'Create draft subscription' })
@@ -66,11 +85,16 @@ export class SubscriptionsController {
     @Body(new ZodValidationPipe(transitionSubscriptionSchema)) dto: TransitionSubscriptionDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.subscriptionsService.transition(id, dto.status as any, {
-      id: user.sub,
-      role: user.role,
-      customerId: user.customerId,
-    }, dto.reason);
+    return this.subscriptionsService.transition(
+      id,
+      dto.status as any,
+      {
+        id: user.sub,
+        role: user.role,
+        customerId: user.customerId,
+      },
+      dto.reason,
+    );
   }
 
   @Post(':id/pause')
@@ -95,4 +119,3 @@ export class SubscriptionsController {
     });
   }
 }
-

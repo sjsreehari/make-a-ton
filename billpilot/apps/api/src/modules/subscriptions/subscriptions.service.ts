@@ -18,6 +18,7 @@ import {
   IllegalTransitionError,
 } from '@billpilot/shared';
 import { CreateSubscriptionDto, TransitionSubscriptionDto } from './subscriptions.dto';
+import { previewNextInvoiceDates } from '../billing/billing-schedule';
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
   DRAFT: ['QUOTATION', 'CLOSED'],
@@ -100,7 +101,21 @@ export class SubscriptionsService implements ISubscriptionService {
       throw new NotFoundException(`Subscription not found: ${id}`);
     }
 
-    return sub;
+    const schedulePreview =
+      sub.status === 'ACTIVE' && !sub.isPaused && sub.plan
+        ? previewNextInvoiceDates(
+            sub.nextBillingDate || sub.startDate,
+            sub.plan.billingPeriod,
+            3,
+            sub.nextBillingDate || undefined,
+            sub.startDate.getUTCDate(),
+          ).map((d) => d.toISOString())
+        : [];
+
+    return {
+      ...sub,
+      schedulePreview,
+    };
   }
 
   async create(dto: CreateSubscriptionDto, actor: Actor) {
@@ -383,5 +398,54 @@ export class SubscriptionsService implements ISubscriptionService {
       nextCursor: hasMore ? subs[limit].id : undefined,
     };
   }
-}
 
+  async previewSchedule(id: string, customerId?: string) {
+    const sub = await this.findOne(id, customerId);
+    return {
+      subscriptionId: sub.id,
+      number: sub.number,
+      frequency: sub.plan.billingPeriod,
+      schedulePreview: (sub as any).schedulePreview,
+    };
+  }
+
+  async approveQuotation(id: string, actor: Actor) {
+    const sub = await this.prisma.subscription.findUnique({
+      where: { id },
+      include: { customer: true, plan: true, lines: true },
+    });
+    if (!sub) throw new NotFoundException(`Subscription not found: ${id}`);
+    if (sub.status !== 'QUOTATION') {
+      throw new ConflictException(`Subscription is in status ${sub.status}, expected QUOTATION`);
+    }
+    if (sub.quotationValidUntil && sub.quotationValidUntil < new Date()) {
+      throw new ConflictException('Quotation has expired and cannot be approved');
+    }
+
+    const updated = await this.prisma.subscription.update({
+      where: { id },
+      data: {
+        status: 'CONFIRMED',
+        nextBillingDate: sub.startDate,
+      },
+      include: { customer: true, plan: true, lines: true },
+    });
+
+    await this.audit.log({
+      actor,
+      entity: 'Subscription',
+      entityId: sub.id,
+      action: 'QUOTATION_APPROVED',
+      before: { status: 'QUOTATION' },
+      after: { status: 'CONFIRMED', approvedAt: new Date() },
+    });
+
+    await this.eventBus.emit(DomainEvent.SUBSCRIPTION_CONFIRMED, {
+      subscriptionId: sub.id,
+      customerId: sub.customerId,
+      number: sub.number,
+    });
+
+    return updated;
+  }
+}
