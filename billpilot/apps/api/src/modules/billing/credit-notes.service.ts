@@ -27,7 +27,7 @@ export class CreditNotesService {
 
     const inv = await this.prisma.invoice.findUnique({
       where: { id: invoiceId },
-      include: { customer: true },
+      include: { subscription: { include: { customer: true } } },
     });
 
     if (!inv) throw new NotFoundException(`Invoice not found: ${invoiceId}`);
@@ -121,12 +121,13 @@ export class CreditNotesService {
       where: { id: creditNoteId },
       include: {
         invoice: {
-          include: { customer: true },
+          include: { subscription: { include: { customer: true } } },
         },
       },
     });
 
     if (!memo) throw new NotFoundException(`Credit Note not found: ${creditNoteId}`);
+    const customer = memo.invoice.subscription.customer;
 
     return generateInvoicePdfBuffer({
       number: memo.number,
@@ -135,11 +136,11 @@ export class CreditNotesService {
       currency: memo.invoice.currency,
       status: 'ISSUED',
       customer: {
-        name: memo.invoice.customer.name,
-        email: memo.invoice.customer.email,
-        phone: memo.invoice.customer.phone,
-        company: memo.invoice.customer.company,
-        gstin: memo.invoice.customer.gstin,
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone,
+        company: customer.company,
+        gstin: customer.gstin,
       },
       lines: [
         {

@@ -25,3 +25,5 @@ export const templateSchema = z.object({
 });
 export type TemplateDto = z.infer<typeof templateSchema>;
 
+export { templateSchema as createTemplateSchema };
+export type CreateTemplateDto = TemplateDto;
