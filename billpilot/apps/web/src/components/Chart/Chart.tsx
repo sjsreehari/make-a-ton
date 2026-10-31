@@ -408,8 +408,7 @@ export function Chart<
   useEffect(() => {
     const isReady = LoadState.isReady(data);
 
-    /* eslint-disable react-hooks/set-state-in-effect -- coordinate render/animation state with async data loading transitions */
-    if (isReady && !hasAnimatedRef.current) {
+        if (isReady && !hasAnimatedRef.current) {
       // First time data becomes ready after loading - animate it in
       hasAnimatedRef.current = true;
       setRenderData(true);
@@ -424,7 +423,6 @@ export function Chart<
       setRenderData(false);
       setIsAnimationActive(false);
     }
-    /* eslint-enable react-hooks/set-state-in-effect */
   }, [data]);
 
   const hasCustomTick = independentTick != null;
