@@ -41,15 +41,31 @@ pnpm dev
 
 ---
 
-## Services
+## Services & Web Pages
 
-| Service        | URL                              | Notes                      |
-|----------------|----------------------------------|----------------------------|
-| **Web App**    | http://localhost:3000            | Next.js 15 App Router      |
-| **API**        | http://localhost:4000            | NestJS 10                  |
-| **API Docs**   | http://localhost:4000/api/docs   | Swagger / OpenAPI          |
-| **Mailhog**    | http://localhost:8025            | Local email catcher        |
-| **Prisma DB**  | `pnpm db:studio`                 | Visual DB browser          |
+| Route | Page | Purpose & Design |
+|---|---|---|
+| **`/`** | **Main Landing Page** | Warm cream editorial aesthetic (`#fbfbfa` & `#dc4a22`), mascot on stool, 2M+ stat pill, infinity loop, dashboard window, unit economics table, terminal + bill explainer stepper, mascot row, interactive leakage scanner try-it box, CFO testimonial, ARR hockey-stick curve, dark `#0e0e0d` footer. |
+| **`/pricing`** | **Pricing & Tiers** | BillPilot Platform vs Rescue Engine switcher, Monthly vs Yearly (-16.7%), 3 pricing cards: Starter (₹0), Pro (₹2,499/seat), Enterprise (Custom). |
+| **`/enterprise`** | **Enterprise & Security** | Terracotta wireframe graphic, SOC 2/GDPR/HIPAA compliance pill row, hub-and-spoke architecture, 2M+ stats, on-premise & granular RBAC. |
+| **`/customers`** | **Customer Stories** | 2M+/25K+/SOC 2 pill, 12-logo grid, 19% cycle time quote card, 6 customer case study cards (Apex Global, Zenith Infotech, etc.). |
+| **`/roi`** | **Revenue ROI & Economics** | 3.2x / +31% / -38% stats, financial integrity safeguards (composite locks, atomic discounts, read-only AI views), 62% Razorpay vs 38% Bank CSV split, churn breakdown. |
+| **`/portal`** | **Customer Portal** | Self-service billing, active subscriptions, invoice downloads, Razorpay payments, live proration simulation for seat changes. |
+| **`/dashboard`** | **Operations Hub** | Executive MRR/ARR, leakage alerts, billing run trigger, quick actions, collection charts. |
+| **`/subscriptions`** | **Subscriptions** | Lifecycle state transitions (Draft → Quotation → Confirmed → Active → Closed), pause/resume/early-close/renew. |
+| **`/invoices`** | **Invoices & Billing** | GST-compliant invoices, status pills, PDF receipts, WhatsApp dispatch triggers. |
+| **`/billing-run`** | **Bulk Billing Run** | Idempotent billing execution, pre-run anomaly checks, live execution audit log. |
+| **`/payments`** | **Reconciliation** | Razorpay webhooks, Bank CSV fuzzy statement matching, credit balance allocations. |
+| **`/catalog`** | **Products & Plans** | Odoo variants (+₹560), margin analysis, plan-product bundles. |
+| **`/quotes`** | **Quotation Templates** | One-click draft quotes, natural-language AI quotation drafter. |
+| **`/discounts-taxes`** | **Taxes & Discounts** | 18% GST splits (CGST + SGST vs IGST), concurrency-safe discount vouchers. |
+| **`/leakage`** | **Revenue Leakage** | Automated scanner for uninvoiced contracts, orphaned discounts, 1-click remediation. |
+| **`/payment-rescue`** | **Payment Rescue** | Dunning retry scheduler, card failure categorization, recovered MRR tracking. |
+| **`/ai-assistant`** | **AI Finance Assistant** | Natural-language queries, read-only Postgres views, SQL validator. |
+| **`/communications`** | **WhatsApp Bot** | Twilio Sandbox bot logs, two-way commands, receipt dispatching. |
+| **`/audit`** | **Audit Trail** | Immutable record of who changed what, timestamp, diff, and domain event emitter. |
+| **`/login` / `/signup`** | **Auth Pages** | Argon2 password security, live password strength checklist, JWT session management. |
+| **`:4000/api/docs`** | **Swagger API** | Interactive OpenAPI documentation for all 21 modular NestJS endpoints. |
 
 ---
 
