@@ -577,12 +577,12 @@ export class BillingService implements IInvoiceService {
       where: { id },
       include: {
         lines: true,
-        customer: true,
-        subscription: true,
+        subscription: { include: { customer: true } },
       },
     });
 
-    if (!inv) throw new NotFoundException(`Invoice not found: ${id}`);
+    if (!inv) throw new NotFoundException("Invoice not found: " + id);
+    const customer = inv.subscription.customer;
 
     return generateInvoicePdfBuffer({
       number: inv.number,
@@ -591,12 +591,12 @@ export class BillingService implements IInvoiceService {
       currency: inv.currency,
       status: inv.status,
       customer: {
-        name: inv.customer.name,
-        email: inv.customer.email,
-        phone: inv.customer.phone,
-        company: inv.customer.company,
-        gstin: inv.customer.gstin,
-        billingAddress: inv.customer.billingAddress,
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone,
+        company: customer.company,
+        gstin: customer.gstin,
+        billingAddress: customer.billingAddress,
       },
       lines: inv.lines.map((l) => ({
         description: l.description,

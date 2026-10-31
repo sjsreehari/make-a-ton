@@ -93,7 +93,7 @@ export class ReportsService {
         amountDue: { gt: 0 },
       },
       include: {
-        customer: true,
+        subscription: { include: { customer: true } },
       },
       orderBy: { dueDate: 'asc' },
     });
@@ -114,12 +114,13 @@ export class ReportsService {
       const diffDays = Math.floor((asOf.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
       const due = inv.amountDue;
 
+      const customer = inv.subscription.customer;
       let row = customerMap.get(inv.customerId);
       if (!row) {
         row = {
           customerId: inv.customerId,
-          customerName: inv.customer.name,
-          customerEmail: inv.customer.email,
+          customerName: customer.name,
+          customerEmail: customer.email,
           current: new Decimal(0),
           days1To30: new Decimal(0),
           days31To60: new Decimal(0),

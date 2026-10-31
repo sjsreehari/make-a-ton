@@ -440,7 +440,7 @@ export class SubscriptionsService implements ISubscriptionService {
       after: { status: 'CONFIRMED', approvedAt: new Date() },
     });
 
-    await this.eventBus.emit(DomainEvent.SUBSCRIPTION_CONFIRMED, {
+    await this.eventBus.emit(DomainEvent.SUBSCRIPTION_ACTIVATED, {
       subscriptionId: sub.id,
       customerId: sub.customerId,
       number: sub.number,
