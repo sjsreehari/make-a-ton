@@ -1,0 +1,239 @@
+enum Role {
+  ADMIN
+  STAFF
+  CUSTOMER
+}
+
+enum ProductType {
+  SOFTWARE
+  SERVICE
+  ADDON
+  SUPPORT
+}
+
+enum BillingPeriod {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  DRAFT
+  QUOTATION
+  CONFIRMED
+  ACTIVE
+  CLOSED
+}
+
+enum PaymentTerm {
+  IMMEDIATE
+  NET_7
+  NET_15
+  NET_30
+  NET_60
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  name          String
+  phone         String?
+  role          Role      @default(CUSTOMER)
+  isActive      Boolean   @default(true)
+  emailVerified Boolean   @default(false)
+  whatsappOptIn Boolean   @default(false)
+  customerId    String?   @unique
+  customer      Customer? @relation(fields: [customerId], references: [id])
+  createdById   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  resetTokens   PasswordResetToken[]
+  refreshTokens RefreshToken[]
+
+  @@index([role])
+}
+
+model Customer {
+  id             String    @id @default(cuid())
+  name           String
+  email          String
+  phone          String?
+  company        String?
+  gstin          String?
+  billingAddress Json?
+  currency       String    @default("INR")
+  creditBalance  Decimal   @default(0) @db.Decimal(14, 2)
+  createdAt      DateTime  @default(now())
+  user           User?
+  subscriptions  Subscription[]
+
+  @@index([email])
+  @@index([name])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+}
+
+model Product {
+  id         String      @id @default(cuid())
+  name       String
+  type       ProductType
+  salesPrice Decimal     @db.Decimal(14, 2)
+  costPrice  Decimal     @db.Decimal(14, 2)
+  notes      String?
+  isActive   Boolean     @default(true)
+  taxRuleId  String?
+  taxRule    TaxRule?    @relation(fields: [taxRuleId], references: [id])
+  variants   Variant[]
+  planLinks  PlanProduct[]
+  createdAt  DateTime    @default(now())
+
+  @@index([name])
+}
+
+model Variant {
+  id         String  @id @default(cuid())
+  productId  String
+  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  attribute  String
+  value      String
+  extraPrice Decimal @db.Decimal(14, 2)
+
+  @@unique([productId, attribute, value])
+}
+
+model Plan {
+  id             String        @id @default(cuid())
+  name           String
+  price          Decimal       @db.Decimal(14, 2)
+  billingPeriod  BillingPeriod
+  minQuantity    Int           @default(1)
+  availableFrom  DateTime?
+  availableTo    DateTime?
+  autoClose      Boolean       @default(false)
+  closable       Boolean       @default(true)
+  pausable       Boolean       @default(true)
+  renewable      Boolean       @default(true)
+  isActive       Boolean       @default(true)
+  products       PlanProduct[]
+  subscriptions  Subscription[]
+  templates      QuotationTemplate[]
+
+  @@index([isActive, billingPeriod])
+}
+
+model PlanProduct {
+  planId    String
+  productId String
+  quantity  Int     @default(1)
+  plan      Plan    @relation(fields: [planId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@id([planId, productId])
+}
+
+model TaxRule {
+  id                String             @id @default(cuid())
+  name              String
+  ratePercent       Decimal            @db.Decimal(5, 2)
+  region            String?
+  isInclusive       Boolean            @default(false)
+  isActive          Boolean            @default(true)
+  products          Product[]
+  subscriptionLines SubscriptionLine[]
+}
+
+model QuotationTemplate {
+  id           String      @id @default(cuid())
+  name         String
+  planId       String
+  plan         Plan        @relation(fields: [planId], references: [id])
+  validityDays Int
+  lines        Json
+  paymentTerm  PaymentTerm @default(NET_15)
+  isActive     Boolean     @default(true)
+}
+
+model Subscription {
+  id                  String             @id @default(cuid())
+  number              String             @unique
+  customerId          String
+  customer            Customer           @relation(fields: [customerId], references: [id])
+  planId              String
+  plan                Plan               @relation(fields: [planId], references: [id])
+  status              SubscriptionStatus @default(DRAFT)
+  startDate           DateTime
+  expiryDate          DateTime?
+  nextBillingDate     DateTime?
+  paymentTerm         PaymentTerm        @default(NET_15)
+  isPaused            Boolean            @default(false)
+  pausedAt            DateTime?
+  closedAt            DateTime?
+  closeReason         String?
+  quotationValidUntil DateTime?
+  templateId          String?
+  lines               SubscriptionLine[]
+  invoices            Invoice[]
+  createdById         String?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@index([status, nextBillingDate])
+  @@index([customerId])
+  @@index([planId])
+  @@index([expiryDate])
+  @@index([createdAt])
+}
+
+model SubscriptionLine {
+  id             String       @id @default(cuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  productId      String
+  variantId      String?
+  description    String
+  quantity       Int
+  unitPrice      Decimal      @db.Decimal(14, 2)
+  taxRuleId      String?
+  taxRule        TaxRule?     @relation(fields: [taxRuleId], references: [id])
+  amount         Decimal      @db.Decimal(14, 2)
+
+  @@index([subscriptionId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  at        DateTime @default(now())
+  actorId   String?
+  actorRole Role?
+  entity    String
+  entityId  String
+  action    String
+  before    Json?
+  after     Json?
+  requestId String?
+
+  @@index([entity, entityId])
+  @@index([at])
+}
+

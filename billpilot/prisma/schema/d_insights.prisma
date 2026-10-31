@@ -1,0 +1,112 @@
+enum Channel {
+  WHATSAPP
+  EMAIL
+}
+
+enum NotificationStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  FAILED
+  SKIPPED
+}
+
+enum FindingKind {
+  NEVER_INVOICED
+  EXPIRED_DISCOUNT_APPLIED
+  WRONG_TAX
+  EXPIRED_BUT_ACTIVE
+  STUCK_DRAFT
+  UNSENT_INVOICE
+}
+
+enum RiskBand {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model NotificationLog {
+  id                String             @id @default(cuid())
+  channel           Channel
+  template          String
+  toAddress         String
+  customerId        String?
+  entity            String?
+  entityId          String?
+  payload           Json
+  status            NotificationStatus @default(QUEUED)
+  providerMessageId String?
+  error             String?
+  attempts          Int                @default(0)
+  createdAt         DateTime           @default(now())
+  sentAt            DateTime?
+
+  @@index([customerId, createdAt])
+  @@index([status])
+  @@unique([template, entity, entityId, channel])
+}
+
+model MessageTemplate {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  channel   Channel
+  subject   String?
+  body      String
+  isActive  Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+}
+
+model WhatsAppSession {
+  id         String    @id @default(cuid())
+  phone      String    @unique
+  customerId String?
+  verifiedAt DateTime?
+  lastIntent String?
+  context    Json?
+  updatedAt  DateTime  @updatedAt
+}
+
+model LeakageFinding {
+  id           String      @id @default(cuid())
+  kind         FindingKind
+  entity       String
+  entityId     String
+  amountAtRisk Decimal     @db.Decimal(14, 2)
+  detail       Json
+  resolvedAt   DateTime?
+  detectedAt   DateTime    @default(now())
+
+  @@unique([kind, entity, entityId])
+}
+
+model RiskScore {
+  id         String   @id @default(cuid())
+  customerId String   @unique
+  score      Int
+  band       RiskBand
+  drivers    Json
+  computedAt DateTime @default(now())
+}
+
+model ForecastSnapshot {
+  id                  String   @id @default(cuid())
+  month               DateTime
+  expectedRevenue     Decimal  @db.Decimal(14, 2)
+  expectedCollections Decimal  @db.Decimal(14, 2)
+  assumptions         Json
+  createdAt           DateTime @default(now())
+
+  @@unique([month, createdAt])
+}
+
+model MrrSnapshot {
+  id             String   @id @default(cuid())
+  month          DateTime @unique
+  mrr            Decimal  @db.Decimal(14, 2)
+  newMrr         Decimal  @db.Decimal(14, 2)
+  expansionMrr   Decimal  @db.Decimal(14, 2)
+  contractionMrr Decimal  @db.Decimal(14, 2)
+  churnedMrr     Decimal  @db.Decimal(14, 2)
+  activeCount    Int
+}

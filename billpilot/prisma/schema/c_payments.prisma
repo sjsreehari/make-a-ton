@@ -1,0 +1,167 @@
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  UPI
+  CARD
+  CHEQUE
+  RAZORPAY
+  OTHER
+}
+
+enum PaymentStatus {
+  RECORDED
+  FAILED
+  REFUNDED
+}
+
+enum FailureKind {
+  EXPIRED_CARD
+  INSUFFICIENT_FUNDS
+  MANDATE_LIMIT
+  BANK_ERROR
+  GENERIC
+}
+
+enum MatchStatus {
+  AUTO_MATCHED
+  NEEDS_REVIEW
+  CONFIRMED
+  REJECTED
+  UNMATCHED
+}
+
+enum MandateStatus {
+  ACTIVE
+  PAUSED
+  REVOKED
+  EXPIRED
+}
+
+enum PaymentLinkStatus {
+  CREATED
+  SENT
+  PAID
+  EXPIRED
+  CANCELLED
+}
+
+model Payment {
+  id           String        @id @default(cuid())
+  invoiceId    String
+  invoice      Invoice       @relation(fields: [invoiceId], references: [id])
+  customerId   String
+  method       PaymentMethod
+  amount       Decimal       @db.Decimal(14, 2)
+  paidAt       DateTime
+  note         String?
+  status       PaymentStatus @default(RECORDED)
+  externalRef  String?       @unique
+  recordedById String?
+  createdAt    DateTime      @default(now())
+
+  @@index([invoiceId])
+  @@index([customerId, paidAt])
+  @@index([paidAt])
+}
+
+model PaymentAttempt {
+  id              String       @id @default(cuid())
+  invoiceId       String
+  mandateId       String?
+  attemptNo       Int
+  status          String
+  failureKind     FailureKind?
+  failureMessage  String?
+  nextRetryAt     DateTime?
+  recoveredAmount Decimal?     @db.Decimal(14, 2)
+  at              DateTime     @default(now())
+
+  @@index([invoiceId])
+  @@index([nextRetryAt])
+}
+
+model FailureReason {
+  id              String      @id @default(cuid())
+  kind            FailureKind
+  code            String
+  recoveryPath    String
+  retryAfterHours Int
+
+  @@unique([kind, code])
+}
+
+model BankTransaction {
+  id           String                @id @default(cuid())
+  batchId      String
+  txnDate      DateTime
+  amount       Decimal               @db.Decimal(14, 2)
+  reference    String
+  narration    String?
+  counterparty String?
+  matches      ReconciliationMatch[]
+
+  @@index([batchId])
+  @@index([amount, txnDate])
+}
+
+model ReconciliationMatch {
+  id                String          @id @default(cuid())
+  bankTransactionId String
+  bankTransaction   BankTransaction @relation(fields: [bankTransactionId], references: [id])
+  invoiceId         String?
+  paymentId         String?
+  confidence        Decimal         @db.Decimal(4, 3)
+  status            MatchStatus
+  feeDetected       Decimal?        @db.Decimal(14, 2)
+  signals           Json
+  reviewedById      String?
+}
+
+model Mandate {
+  id          String        @id @default(cuid())
+  customerId  String
+  method      PaymentMethod
+  maxAmount   Decimal       @db.Decimal(14, 2)
+  frequency   String
+  status      MandateStatus @default(ACTIVE)
+  validFrom   DateTime
+  validTo     DateTime?
+  externalRef String?
+  notices     NoticeLog[]
+
+  @@index([customerId])
+}
+
+model NoticeLog {
+  id          String   @id @default(cuid())
+  mandateId   String
+  mandate     Mandate  @relation(fields: [mandateId], references: [id])
+  invoiceId   String?
+  kind        String
+  sentAt      DateTime
+  channel     String
+  dueNoticeBy DateTime
+  compliant   Boolean  @default(true)
+}
+
+model PaymentLink {
+  id             String            @id @default(cuid())
+  invoiceId      String
+  razorpayLinkId String            @unique
+  shortUrl       String
+  amount         Decimal           @db.Decimal(14, 2)
+  status         PaymentLinkStatus @default(CREATED)
+  expiresAt      DateTime?
+  paidAt         DateTime?
+  createdAt      DateTime          @default(now())
+
+  @@index([invoiceId])
+}
+
+model WebhookEvent {
+  id          String   @id
+  provider    String
+  payload     Json
+  processedAt DateTime @default(now())
+}
+

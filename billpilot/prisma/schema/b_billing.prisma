@@ -1,0 +1,174 @@
+enum InvoiceStatus {
+  DRAFT
+  CONFIRMED
+  PAID
+  CANCELLED
+}
+
+enum DiscountType {
+  FIXED
+  PERCENTAGE
+}
+
+enum DiscountScope {
+  PRODUCT
+  SUBSCRIPTION
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  REJECTED
+}
+
+enum PlanChangeKind {
+  UPGRADE
+  DOWNGRADE
+  SEAT_CHANGE
+  PAUSE
+  RESUME
+  CANCEL
+}
+
+enum PlanChangeStatus {
+  REQUESTED
+  APPROVED
+  APPLIED
+  REJECTED
+}
+
+model Invoice {
+  id             String          @id @default(cuid())
+  number         String          @unique
+  subscriptionId String
+  subscription   Subscription    @relation(fields: [subscriptionId], references: [id])
+  customerId     String
+  status         InvoiceStatus   @default(DRAFT)
+  periodStart    DateTime
+  periodEnd      DateTime
+  issueDate      DateTime        @default(now())
+  dueDate        DateTime
+  currency       String          @default("INR")
+  subtotal       Decimal         @db.Decimal(14, 2)
+  discountTotal  Decimal         @default(0) @db.Decimal(14, 2)
+  taxTotal       Decimal         @db.Decimal(14, 2)
+  total          Decimal         @db.Decimal(14, 2)
+  amountPaid     Decimal         @default(0) @db.Decimal(14, 2)
+  amountDue      Decimal         @db.Decimal(14, 2)
+  confirmedAt    DateTime?
+  paidAt         DateTime?
+  cancelledAt    DateTime?
+  sentAt         DateTime?
+  explainer      Json?
+  lines          InvoiceLine[]
+  payments       Payment[]
+  discountUsages DiscountUsage[]
+  creditMemos    CreditMemo[]
+  disputes       Dispute[]
+  createdAt      DateTime        @default(now())
+
+  @@unique([subscriptionId, periodStart, periodEnd])
+  @@index([customerId, status])
+  @@index([status, dueDate])
+  @@index([issueDate])
+}
+
+model InvoiceLine {
+  id             String  @id @default(cuid())
+  invoiceId      String
+  invoice        Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  productId      String?
+  description    String
+  quantity       Int
+  unitPrice      Decimal @db.Decimal(14, 2)
+  lineSubtotal   Decimal @db.Decimal(14, 2)
+  discountAmount Decimal @default(0) @db.Decimal(14, 2)
+  taxRatePercent Decimal @db.Decimal(5, 2)
+  taxAmount      Decimal @db.Decimal(14, 2)
+  lineTotal      Decimal @db.Decimal(14, 2)
+  kind           String  @default("RECURRING")
+
+  @@index([invoiceId])
+}
+
+model Discount {
+  id                String          @id @default(cuid())
+  code              String          @unique
+  name              String
+  type              DiscountType
+  value             Decimal         @db.Decimal(14, 2)
+  scope             DiscountScope
+  productIds        String[]
+  minPurchaseAmount Decimal?        @db.Decimal(14, 2)
+  minQuantity       Int?
+  startsAt          DateTime
+  endsAt            DateTime
+  usageLimit        Int?
+  usedCount         Int             @default(0)
+  isActive          Boolean         @default(true)
+  minMarginPercent  Decimal?        @db.Decimal(5, 2)
+  usages            DiscountUsage[]
+
+  @@index([isActive, startsAt, endsAt])
+}
+
+model DiscountUsage {
+  id         String   @id @default(cuid())
+  discountId String
+  discount   Discount @relation(fields: [discountId], references: [id])
+  invoiceId  String
+  invoice    Invoice  @relation(fields: [invoiceId], references: [id])
+  amount     Decimal  @db.Decimal(14, 2)
+  at         DateTime @default(now())
+
+  @@unique([discountId, invoiceId])
+}
+
+model ProrationAdjustment {
+  id               String   @id @default(cuid())
+  subscriptionId   String
+  planChangeId     String?
+  fromDate         DateTime
+  toDate           DateTime
+  creditAmount     Decimal  @db.Decimal(14, 2)
+  chargeAmount     Decimal  @db.Decimal(14, 2)
+  explanation      Json
+  appliedInvoiceId String?
+}
+
+model CreditMemo {
+  id        String   @id @default(cuid())
+  number    String   @unique
+  invoiceId String
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+  amount    Decimal  @db.Decimal(14, 2)
+  reason    String
+  createdAt DateTime @default(now())
+}
+
+model PlanChangeRequest {
+  id              String           @id @default(cuid())
+  subscriptionId  String
+  requestedById   String
+  kind            PlanChangeKind
+  toPlanId        String?
+  newQuantity     Int?
+  status          PlanChangeStatus @default(REQUESTED)
+  requestedAt     DateTime         @default(now())
+  effectiveAt     DateTime?
+  previewSnapshot Json
+}
+
+model Dispute {
+  id         String        @id @default(cuid())
+  invoiceId  String
+  invoice    Invoice       @relation(fields: [invoiceId], references: [id])
+  raisedById String
+  reason     String
+  status     DisputeStatus @default(OPEN)
+  packet     Json?
+  resolution String?
+  createdAt  DateTime      @default(now())
+}
+
