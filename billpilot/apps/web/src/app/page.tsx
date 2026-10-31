@@ -103,48 +103,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#fbfbfa] text-[#1c1b1a] selection:bg-[#dc4a22]/20 font-sans antialiased overflow-x-hidden">
-      {/* Top Navbar */}
-      <header className="sticky top-0 z-50 backdrop-blur-md bg-[#fbfbfa]/90 border-b border-[#e8e8e3]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="size-7 rounded-lg bg-[#dc4a22] flex items-center justify-center text-white shadow-sm shadow-[#dc4a22]/30">
-                <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="12 2 19 21 12 17 5 21 12 2" />
-                </svg>
-              </div>
-              <span className="font-bold text-base tracking-tight text-[#1c1b1a]">
-                billpilot
-              </span>
-            </Link>
-
-            <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-[#6e6d6a]">
-              <a href="#story" className="hover:text-[#1c1b1a] transition-colors">Lifecycle</a>
-              <a href="#features" className="hover:text-[#1c1b1a] transition-colors">Modules</a>
-              <a href="#margins" className="hover:text-[#1c1b1a] transition-colors">Margins</a>
-              <a href="#explainer" className="hover:text-[#1c1b1a] transition-colors">Bill Explainer</a>
-              <a href="#leakage" className="hover:text-[#1c1b1a] transition-colors">Leakage Detector</a>
-              <Link href="/portal" className="text-[#dc4a22] font-semibold hover:underline">Customer Portal</Link>
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="px-3 py-1.5 rounded-full text-xs font-medium text-[#6e6d6a] hover:text-[#1c1b1a] transition-colors"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold bg-[#1c1b1a] hover:bg-black text-white shadow-sm transition-all transform hover:-translate-y-0.5"
-            >
-              <span>Launch App</span>
-              <ArrowRight className="size-3" />
-            </Link>
-          </div>
-        </div>
-      </header>
+      <MarketingNavbar />
 
       {/* Hero Section with Cute Mascot */}
       <section className="pt-16 pb-14 px-4 sm:px-6 max-w-4xl mx-auto text-center">
@@ -707,83 +666,7 @@ export default function LandingPage() {
       </section>
 
       {/* Giant Dark Weave-Style Footer */}
-      <footer className="bg-[#0e0e0d] text-white pt-20 pb-12 px-4 sm:px-6 border-t border-zinc-900">
-        <div className="max-w-6xl mx-auto space-y-16">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 text-xs">
-            <div>
-              <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider block mb-3 font-semibold">
-                Operations
-              </span>
-              <ul className="space-y-2 text-zinc-400">
-                <li><Link href="/dashboard" className="hover:text-white transition-colors">Dashboard</Link></li>
-                <li><Link href="/subscriptions" className="hover:text-white transition-colors">Subscriptions</Link></li>
-                <li><Link href="/invoices" className="hover:text-white transition-colors">Invoices & Billing</Link></li>
-                <li><Link href="/billing-run" className="hover:text-white transition-colors">Bulk Billing Run</Link></li>
-                <li><Link href="/payments" className="hover:text-white transition-colors">Reconciliation</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider block mb-3 font-semibold">
-                Commerce
-              </span>
-              <ul className="space-y-2 text-zinc-400">
-                <li><Link href="/catalog" className="hover:text-white transition-colors">Plans & Products</Link></li>
-                <li><Link href="/quotes" className="hover:text-white transition-colors">Quotation Templates</Link></li>
-                <li><Link href="/discounts-taxes" className="hover:text-white transition-colors">GST Tax Rules</Link></li>
-                <li><Link href="/discounts-taxes" className="hover:text-white transition-colors">Discounts & Margins</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider block mb-3 font-semibold">
-                Automation
-              </span>
-              <ul className="space-y-2 text-zinc-400">
-                <li><Link href="/ai-assistant" className="hover:text-white transition-colors">AI Finance Assistant</Link></li>
-                <li><Link href="/leakage" className="hover:text-white transition-colors">Leakage Detector</Link></li>
-                <li><Link href="/payment-rescue" className="hover:text-white transition-colors">Payment Rescue</Link></li>
-                <li><Link href="/communications" className="hover:text-white transition-colors">WhatsApp Bot</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider block mb-3 font-semibold">
-                Self-Service
-              </span>
-              <ul className="space-y-2 text-zinc-400">
-                <li><Link href="/portal" className="hover:text-white transition-colors">Customer Portal</Link></li>
-                <li><Link href="/portal" className="hover:text-white transition-colors">Proration Previews</Link></li>
-                <li><Link href="/audit" className="hover:text-white transition-colors">Audit Trail</Link></li>
-                <li><Link href="/settings" className="hover:text-white transition-colors">Staff Settings</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider block mb-3 font-semibold">
-                Brightloop
-              </span>
-              <p className="text-zinc-500 text-[11px] leading-relaxed">
-                BillPilot was built for the 7-hour Hackathon challenge to remove every manual step in recurring billing.
-              </p>
-            </div>
-          </div>
-
-          {/* Huge Stylized Watermark Logo */}
-          <div className="pt-8 border-t border-zinc-900 flex flex-col sm:flex-row items-center justify-between gap-6">
-            <span className="text-5xl sm:text-7xl font-bold tracking-tighter text-zinc-900 select-none font-sans">
-              billpilot
-            </span>
-            <div className="flex items-center gap-4 text-[11px] font-mono text-zinc-500">
-              <span className="flex items-center gap-1.5 text-emerald-400">
-                <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                All systems normal
-              </span>
-              <span>© 2026 Brightloop Software</span>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }
