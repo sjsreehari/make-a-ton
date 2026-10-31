@@ -14,6 +14,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { BillingService } from './billing.service';
+import { CreditNotesService } from './credit-notes.service';
 import {
   RunBillingDto,
   CancelInvoiceDto,
@@ -30,7 +31,10 @@ import type { JwtPayload } from '../../common/guards/roles.guard';
 @ApiBearerAuth()
 @Controller('invoices')
 export class BillingController {
-  constructor(private readonly billingService: BillingService) {}
+  constructor(
+    private readonly billingService: BillingService,
+    private readonly creditNotesService: CreditNotesService,
+  ) {}
 
   @Get()
   @Roles('ADMIN', 'STAFF', 'CUSTOMER')
@@ -136,6 +140,41 @@ export class BillingController {
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Disposition': `inline; filename="invoice-${id}.pdf"`,
+      'Content-Length': pdfBuffer.length,
+    });
+    res.end(pdfBuffer);
+  }
+
+  @Post(':id/credit-notes')
+  @Roles('ADMIN', 'STAFF')
+  @ApiOperation({ summary: 'Issue credit note for an invoice and reduce amount due' })
+  async createCreditNote(
+    @Param('id') id: string,
+    @Body() dto: { amount: number; reason: string },
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.creditNotesService.createForInvoice(
+      id,
+      dto,
+      user ? { id: user.sub, role: user.role } : undefined,
+    );
+  }
+
+  @Get(':id/credit-notes')
+  @Roles('ADMIN', 'STAFF', 'CUSTOMER')
+  @ApiOperation({ summary: 'List credit notes for an invoice' })
+  async listCreditNotes(@Param('id') id: string) {
+    return this.creditNotesService.findByInvoice(id);
+  }
+
+  @Get('credit-notes/:creditNoteId/pdf')
+  @Roles('ADMIN', 'STAFF', 'CUSTOMER')
+  @ApiOperation({ summary: 'Download or stream credit note PDF' })
+  async downloadCreditNotePdf(@Param('creditNoteId') creditNoteId: string, @Res() res: Response) {
+    const pdfBuffer = await this.creditNotesService.renderPdf(creditNoteId);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `inline; filename="credit-note-${creditNoteId}.pdf"`,
       'Content-Length': pdfBuffer.length,
     });
     res.end(pdfBuffer);
