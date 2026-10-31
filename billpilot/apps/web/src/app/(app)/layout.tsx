@@ -32,8 +32,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, [pathname, router]);
 
   if (state !== "authed") {
-    return <SidebarLayout sidebar={<div className="md:w-[244px]" />}>{null}</SidebarLayout>;
+    return (
+      <div className="h-screen w-full overflow-hidden">
+        <SidebarLayout sidebar={<div className="md:w-[244px]" />}>{null}</SidebarLayout>
+      </div>
+    );
   }
 
-  return <SidebarLayout sidebar={<Sidebar />}>{children}</SidebarLayout>;
+  return (
+    <div className="h-screen w-full overflow-hidden">
+      <SidebarLayout sidebar={<Sidebar />}>{children}</SidebarLayout>
+    </div>
+  );
 }
