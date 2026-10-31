@@ -1,0 +1,288 @@
+======================================================================
+BILLPILOT — SUBSCRIPTION MANAGEMENT SYSTEM SPECIFICATION & BLUEPRINT
+Brightloop Software — 7-Hour Hackathon Foundation & Team Handoff
+======================================================================
+
+1. VISION AND PITCH
+----------------------------------------------------------------------
+"We removed every manual step in the billing month, from the quote to the cash in the bank."
+Brightloop Software sells recurring software subscriptions and services. BillPilot replaces spreadsheet-driven billing, manual invoice matching, and blind revenue leakage with a single automated subscription engine.
+
+2. PERSONAS
+----------------------------------------------------------------------
+- Admin: Full control over staff creation, product catalog, plans, tax rules, discounts, and system configuration.
+- Staff: Day-to-day operations: creating quotation templates, managing subscriptions, issuing invoices, recording payments, and customer support.
+- Finance Lead: High-level financial visibility: MRR/ARR movement, revenue leakage detector, bank reconciliation, and AI finance assistant queries.
+- Customer: Self-service portal: view active subscriptions and invoices, download GST-compliant PDFs, pay outstanding amounts via Razorpay, and manage WhatsApp communication.
+
+3. ORIGINAL REQUIREMENTS CHECKLIST (SECTION 2 MANDATORY)
+----------------------------------------------------------------------
+[x] 2.1 Sign-up with email + password (min 9 chars, uppercase, lowercase, special char), email unique case-insensitive.
+[x] 2.1 Forgot password: token expires in 30 mins, single use, generic 200 response (no user enumeration).
+[x] 2.1 Roles: ADMIN, STAFF, CUSTOMER. Every server route role-guarded. Customer queries scoped by JWT customerId.
+[x] 2.2 Products and Plans: Software, Service, Addon, Support types; variants with price modifiers (brand=Odoo +560).
+[x] 2.2 Plans: price, billing period (DAILY|WEEKLY|MONTHLY|YEARLY), switches (autoClose, closable, pausable, renewable).
+[x] 2.3 Quotation templates: preset plans, products, validity N days.
+[x] 2.3 Subscriptions: unique SUB-2026-000001 sequence, state machine (DRAFT -> QUOTATION -> CONFIRMED -> ACTIVE -> CLOSED).
+[x] 2.4 Invoicing: auto-generated from subscriptions, bulk generation on billing day, idempotency on (subscriptionId, periodStart, periodEnd).
+[x] 2.4 Automatic tax calculation from admin rules, invoice actions (confirm, cancel, send, PDF), status flow (DRAFT -> CONFIRMED -> PAID).
+[x] 2.5 Discounts: fixed/percentage, conditional usage limit update, margin check.
+[x] 2.6 Payments: method, amount, date against invoice; partial payment supported; overpayment added to credit balance.
+[x] 2.7 Reporting dashboard: active subs, revenue, owed, overdue count, aggregate queries, Redis cache, p95 < 2s.
+
+4. WIN FEATURES (SECTION 3)
+----------------------------------------------------------------------
+Tier 1 (Must Ship):
+- WhatsApp invoices, reminders, and payment receipts via Twilio sandbox.
+- Razorpay payment links + webhook auto-reconciliation with replay safety.
+- MRR/ARR breakdown and movement dashboard.
+- Immutable audit log tracking actor, action, and before/after payloads.
+- Seeded 5,000+ subscriptions with footer load-time badge.
+Tier 2 (Wow):
+- AI Finance Assistant (read-only Text-to-SQL for v_* views).
+- Natural Language to Quotation via tool calling.
+- Revenue Leakage Detector with one-click remediation.
+- Payment Rescue Engine with failure classification and automated retries.
+- Bank CSV reconciliation with fuzzy confidence scoring.
+- "Why is my bill Rs X?" step-by-step invoice math explainer.
+- Proration preview for plan changes.
+Tier 3 (Polish):
+- Dunning schedule, churn risk scoring, cash-flow forecasts, dark mode.
+
+5. ARCHITECTURE DIAGRAM (ASCII)
+----------------------------------------------------------------------
+   +-------------------------------------------------------------+
+   |                     WEB (Next.js 15)                        |
+   |              Tailwind CSS + Recharts (:3000)                |
+   +------------------------------+------------------------------+
+                                  | HTTP / REST (Bearer JWT)
+                                  v
+   +-------------------------------------------------------------+
+   |                    API (NestJS 10) (:4000)                  |
+   |                                                             |
+   |  [Auth/Users]   [Catalog]   [Subscriptions]   [Audit]       |
+   |  [Billing]      [Discounts] [Tax]             [Proration]   |
+   |  [Payments]     [Rescue]    [Reconcile]       [Paylinks]    |
+   |  [Notifications][WhatsApp]  [Insights/MRR]    [AI Assist]   |
+   +---------------+--------------+---------------+--------------+
+                   |              |               |
+          Prisma 5 |      ioredis |        BullMQ |
+                   v              v               v
+   +---------------+----+   +-----+--------+   +--+--------------+
+   | PostgreSQL 16      |   | Redis 7      |   | Background Queue|
+   | - Base Tables      |   | - Cache (60s)|   | - Domain events |
+   | - Read-only Views  |   | - Idempotency|   | - Retries/Rescue|
+   +--------------------+   +--------------+   +-----------------+
+            ^                                          |
+            | Webhooks                                 | Webhooks / SDK
+   +--------+-----------+                     +--------v---------+
+   | External Inbound   |                     | External Outbound|
+   | - Razorpay Webhook |                     | - Twilio WhatsApp|
+   | - Twilio WhatsApp  |                     | - Razorpay Links |
+   |   Inbound Bot      |                     | - Anthropic AI   |
+   +--------------------+                     +------------------+
+
+6. MODULE MAP AND OWNERSHIP
+----------------------------------------------------------------------
+Person A (Branch: feat/core)
+  - Modules: auth, users, catalog, subscriptions, reports, audit, common/
+  - Web: (auth), dashboard, products, plans, quotation-templates, subscriptions, staff, audit-log, portal shell
+  - Database: a_core.prisma, seed orchestrator, CI/Docker
+
+Person B (Branch: feat/billing)
+  - Modules: billing, discounts, proration, tax, disputes
+  - Web: invoices, discounts, taxes, customer portal invoices & plan change preview
+  - Database: b_billing.prisma
+
+Person C (Branch: feat/payments)
+  - Modules: payments, rescue, reconcile, paylinks, mandates
+  - Web: payments, reconcile, rescue, customer portal payments & pay now
+  - Database: c_payments.prisma
+
+Person D (Branch: feat/insights-comms)
+  - Modules: notifications, whatsapp, insights, ai, forecasts
+  - Web: mrr, leakage, assistant, settings/templates, customer portal savings
+  - Database: d_insights.prisma
+
+7. DATA MODEL SUMMARY (ER RELATIONS)
+----------------------------------------------------------------------
+Customer 1:1 User
+Customer 1:N Subscription
+Customer 1:N Invoice
+Customer 1:N Payment
+Customer 1:N Mandate
+Plan 1:N Subscription
+Plan 1:N PlanProduct N:1 Product
+Product 1:N Variant
+Product N:1 TaxRule
+QuotationTemplate N:1 Plan
+Subscription 1:N SubscriptionLine
+Subscription 1:N Invoice
+Invoice 1:N InvoiceLine
+Invoice 1:N Payment
+Invoice 1:N DiscountUsage N:1 Discount
+Invoice 1:N CreditMemo
+Invoice 1:N Dispute
+BankTransaction 1:N ReconciliationMatch
+Mandate 1:N NoticeLog
+
+8. API CONVENTIONS
+----------------------------------------------------------------------
+- Base path: /api/v1
+- JSON request and response bodies only.
+- Timestamps in ISO-8601 UTC format.
+- Monetary amounts represented as strings formatted to 2 decimal places.
+- Pagination: ?page=1&limit=20 (maximum 100).
+- Standard envelope response: { "data": [...], "meta": { "page": 1, "limit": 20, "total": 500, "totalPages": 25 } }
+- Error format: { "error": { "code": "VALIDATION_FAILED", "message": "...", "details": [...], "requestId": "..." } }
+- Response headers: X-Request-Id, X-Response-Time.
+- Default deny role guard on all routes; @Public() to opt out.
+
+9. SERVICE CONTRACTS
+----------------------------------------------------------------------
+- IInvoiceService: generateFromSubscription, runBilling, confirm, cancel, send, renderPdf, markPaidIfSettled.
+- IPaymentService: record, listForInvoice, outstanding.
+- INotificationService: send (channel: WHATSAPP | EMAIL, template, to, data, dedupeKey).
+- ISubscriptionService: transition, pause, resume, earlyClose, renew, getBillable.
+- IAuditService: log (actor, entity, entityId, action, before, after, requestId).
+
+10. EVENT CATALOGUE
+----------------------------------------------------------------------
+Event Name               Producer                 Consumers
+----------------------------------------------------------------------
+subscription.activated   SubscriptionService      NotificationService, Audit
+subscription.expiring    SubscriptionCronJob      WhatsAppService (Alert)
+invoice.generated        InvoiceService           Audit
+invoice.confirmed        InvoiceService           WhatsAppService (PDF+PayLink)
+invoice.paid             InvoiceService/Payment   WhatsApp (Receipt), Dashboard
+invoice.overdue          DunningCronJob           NotificationService, Rescue
+payment.recorded         PaymentService           InvoiceService, Audit, Redis
+payment.failed           PaymentRescueService     WhatsAppService, RescueQueue
+plan.change.requested    ProrationService         CustomerNotification
+
+11. BUSINESS RULES (VERBATIM FROM SECTION 11)
+----------------------------------------------------------------------
+11.1 Subscription State Machine:
+  DRAFT -> QUOTATION -> CONFIRMED -> ACTIVE -> CLOSED.
+  PAUSED is handled via isPaused=true and pausedAt timestamp under ACTIVE status.
+  Pausing stops billing; resume continues. Early close and renew check plan switches.
+
+11.2 Billing Period Math:
+  DAILY (+1d), WEEKLY (+7d), MONTHLY (+1 calendar month with clamp for end of month), YEARLY (+1y).
+  periodStart = nextBillingDate before advance; periodEnd = periodStart + 1 period - 1 day.
+
+11.3 Invoice Generation Algorithm:
+  Row-lock subscription FOR UPDATE. Skip if not ACTIVE, paused, or nextBillingDate > asOf.
+  Check unique (subscriptionId, periodStart, periodEnd).
+  Build lines, apply valid discounts (usedCount < usageLimit conditional update), compute tax (2dp round), advance nextBillingDate.
+
+11.4 Payments & Overpayment:
+  Invoice row-lock. Reject if CANCELLED/DRAFT. min(amount, amountDue) applies to invoice.
+  Excess amount increments Customer.creditBalance. If amountDue reaches 0, flip to PAID.
+
+11.5 Razorpay Webhook:
+  POST /api/v1/webhooks/razorpay. Verify X-Razorpay-Signature via HMAC-SHA256 with raw body.
+  Store WebhookEvent(id) for replay idempotency. Record payment on payment.captured.
+
+11.6 Payment Rescue:
+  Classify failure reason. Auto-retry schedule via BullMQ delays. Manual simulation trigger.
+
+11.7 Bank Reconciliation:
+  Fuzzy score = 0.5*amount + 0.3*refContainsInvoice + 0.2*nameSimilarity. Net-of-fee (0.5% - 3%) tolerance.
+
+11.8 WhatsApp Inbound & AI Assistant:
+  Phone matched to verified Customer. Read-only views queried with timeout and row limit.
+
+12. SECURITY MODEL
+----------------------------------------------------------------------
+Role Matrix:
+Feature                 ADMIN   STAFF   CUSTOMER
+Users/staff mgmt          W       -        -
+Products/Plans            W       R        R(public)
+Tax rules                 W       R        -
+Discounts                 W       R        -
+Quotation templates       W       W        -
+Subscriptions             W       W        R(own)
+Invoices                  W       W        R(own)
+Payments                  W       W        R(own)
+Dashboard/Reports         W       R        -
+Audit log                 R       -        -
+AI assistant              W       R(fin)   -
+Reconciliation            W       W        -
+
+13. PERFORMANCE PLAN
+----------------------------------------------------------------------
+- P95 response time under 2000ms with 5,000+ subscriptions and 60,000+ invoices.
+- Composite indexes on (status, nextBillingDate), (customerId, status), (issueDate).
+- Keyset pagination with cursor on large listings.
+- Redis caching (60s TTL) for aggregate summary statistics.
+- Load-time badge visible in application footer.
+
+14. SEED PLAN
+----------------------------------------------------------------------
+- Default seed: 3 users (Admin, Staff, Customer), 6 plans, 12 products, 3 tax rules, 50 customers, 200 subscriptions.
+- Scale mode: `pnpm db:seed -- --scale=5000` bulk-creates 5,000+ subscriptions and ~60k invoices for performance benchmarks.
+
+15. TEST PLAN
+----------------------------------------------------------------------
+- Auth e2e: Password validation (min 9 chars, upper, lower, special), duplicate email prevention (409), login token issuance.
+- RBAC e2e: 403 Forbidden enforcement on role-guarded routes.
+- Idempotency e2e: Double billing execution verification.
+- Concurrency test: Discount exhaustion under parallel runs.
+
+16. DEMO SCRIPT (5 MINUTES)
+----------------------------------------------------------------------
+0:00 - Person A: Dashboard loads with 5,200 subscriptions in < 400ms. Dark mode toggle.
+0:30 - Person A: Customer signup with strong password rules. Product variant (Odoo +560). Subscription lifecycle.
+1:15 - Person B: Run billing. Double-click idempotency demonstration. Bill explainer and proration preview.
+2:00 - Person D: WhatsApp invoice delivery with PDF and Razorpay payment link. Inbound bot conversation.
+2:30 - Person C: Pay via Razorpay test link. Webhook marks invoice Paid. Live dashboard update.
+3:15 - Person C: Payment Rescue failure classification and bank CSV reconciliation.
+4:00 - Person D: Revenue Leakage Detector 1-click remediation. AI Finance Assistant text-to-SQL.
+4:45 - Team: Closing pitch: "We removed every manual step in the billing month."
+
+17. HOUR-BY-HOUR PLAN (0-7 HOURS)
+----------------------------------------------------------------------
+Hour 0-1: Architecture & shared contracts verification (All).
+Hour 1-2: Auth, Catalog, and Tax rules implementation (A, B).
+Hour 2-3: Subscriptions state machine & Invoice generation engine (A, B).
+Hour 3-4: Payments recording, Razorpay integration & Portal shell (A, C).
+Hour 4-5: WhatsApp bot, Notifications, Bank reconciliation & Reports (A, C, D).
+Hour 5-6: Payment rescue, Revenue leakage detector & Performance tuning (B, C, D).
+Hour 6-7: End-to-end rehearsal, demo script walk-through, bug squashing (All).
+
+18. SYNC POINTS
+----------------------------------------------------------------------
+- Sync 1 (End of Hour 1): Schema frozen, contracts compiled.
+- Sync 2 (End of Hour 3): Subscription and Billing integration tested.
+- Sync 3 (End of Hour 5): Webhook and WhatsApp live end-to-end.
+- Sync 4 (End of Hour 6): Final demo dry-run.
+
+19. RISKS AND MITIGATIONS
+----------------------------------------------------------------------
+- Risk: Twilio sandbox connectivity delays. Mitigation: Mock WhatsApp sender with local fallback log.
+- Risk: AI API quota exhaustion. Mitigation: Hardcoded allowlisted SQL fallback templates.
+- Risk: Razorpay webhook delivery latency. Mitigation: Manual payment sync button on invoice screen.
+
+20. GLOSSARY
+----------------------------------------------------------------------
+- MRR: Monthly Recurring Revenue.
+- ARR: Annual Recurring Revenue (MRR * 12).
+- Net-of-fee: Bank statement amounts where payment gateway processing fees were deducted prior to settlement.
+- Proration: Proportional price calculation for mid-period plan upgrades or seat adjustments.
+
+21. ENVIRONMENT SETUP GUIDE
+----------------------------------------------------------------------
+1. Copy `.env.example` to `.env`.
+2. Start PostgreSQL 16 and Redis 7 (via docker compose or local services).
+3. Run `pnpm db:migrate` and `pnpm db:seed`.
+4. Start dev servers: `pnpm dev`.
+5. Twilio Sandbox: Send "join <code\>" to +1 415 523 8886. Run `ngrok http 4000` and set webhook URL.
+
+22. DEFINITION OF DONE
+----------------------------------------------------------------------
+- Zero TypeScript compile or typecheck errors across all workspaces.
+- Every route role-guarded and verified.
+- All monetary operations handled using Prisma.Decimal or Decimal.js (no JS floats).
+- P95 response time under 2000ms with 5,000+ records.
+======================================================================
