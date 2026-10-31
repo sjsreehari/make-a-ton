@@ -288,4 +288,3 @@ Target: p95 under 2 seconds on every page and endpoint with 5,000+ subscriptions
 
 ---
 
-**Brightloop Software** - BillPilot. Built in 7 hours.
