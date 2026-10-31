@@ -42,3 +42,4 @@ export function StatsCard({ title, value, change, trend = 'neutral', icon }: Sta
     </Card>
   );
 }
+

@@ -21,3 +21,4 @@ export interface NavItem {
   icon: string;
   badge?: string | number;
 }
+

@@ -20,3 +20,4 @@ export function formatDate(dateInput: string | Date | number): string {
     dateStyle: 'medium',
   }).format(date);
 }
+
