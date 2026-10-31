@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { AuditService } from './audit.service';
@@ -12,7 +12,7 @@ export class AuditController {
 
   @Get()
   @Roles('ADMIN')
-  @ApiOperation({ summary: 'View immutable system audit logs (Admin only)' })
+  @ApiOperation({ summary: 'View immutable system audit logs with filters (Admin only)' })
   async findAll(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -24,5 +24,14 @@ export class AuditController {
       ...filters,
     });
   }
-}
 
+  @Get('timeline/:entity/:entityId')
+  @Roles('ADMIN', 'STAFF')
+  @ApiOperation({ summary: 'Get entity activity timeline (Invoice, Subscription, Payment)' })
+  async getTimeline(
+    @Param('entity') entity: string,
+    @Param('entityId') entityId: string,
+  ) {
+    return this.auditService.getTimeline(entity, entityId);
+  }
+}
