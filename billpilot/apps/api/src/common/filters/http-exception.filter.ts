@@ -30,6 +30,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
       code = exception.code;
       message = exception.message;
       details = exception.details;
+    } else if (exception instanceof ZodError || (exception as any)?.name === 'ZodError' || Array.isArray((exception as any)?.errors)) {
+      status = HttpStatus.BAD_REQUEST;
+      code = ErrorCode.VALIDATION_FAILED;
+      message = (exception as any).errors?.[0]?.message || 'Validation failed';
+      details = (exception as any).errors;
     } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       const res = exception.getResponse();
@@ -49,11 +54,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
       else if (status === 409) code = ErrorCode.CONFLICT;
       else if (status === 422 || status === 400) code = ErrorCode.VALIDATION_FAILED;
       else if (status === 429) code = ErrorCode.RATE_LIMITED;
-    } else if (exception instanceof ZodError) {
-      status = 422;
-      code = ErrorCode.VALIDATION_FAILED;
-      message = 'Validation failed';
-      details = exception.errors;
     } else if (exception instanceof Error) {
       this.logger.error(`Unhandled error: ${exception.message}`, exception.stack);
     }
@@ -68,4 +68,3 @@ export class HttpExceptionFilter implements ExceptionFilter {
     });
   }
 }
-

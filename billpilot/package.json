@@ -1,7 +1,7 @@
 {
   "name": "billpilot",
   "private": true,
-  "packageManager": "pnpm@12.9.1",
+  "packageManager": "pnpm@9.15.9",
   "version": "0.1.0",
   "scripts": {
     "dev": "turbo run dev",
@@ -15,6 +15,9 @@
     "db:reset": "prisma migrate reset --force --schema=prisma/schema && pnpm db:seed",
     "db:studio": "prisma studio --schema=prisma/schema",
     "perf:check": "tsx scripts/perf-check.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0"
   },
   "devDependencies": {
     "@types/node": "^20.17.0",
@@ -31,9 +34,6 @@
     "apps/*",
     "packages/*"
   ],
-  "dependencies": {
-    "@prisma/client": "^5.22.0"
-  },
   "pnpm": {
     "onlyBuiltDependencies": [
       "@nestjs/core",

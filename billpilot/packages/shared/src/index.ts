@@ -4,6 +4,8 @@ export * from './constants.js';
 export * from './errors.js';
 export * from './events.js';
 export * from './contracts.js';
+export * from './sitemap.js';
+export * from './tours.js';
 
 // Schemas
 export * from './schemas/auth.js';

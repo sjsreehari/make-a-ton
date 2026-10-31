@@ -11,9 +11,17 @@
     "strictPropertyInitialization": false,
     "skipLibCheck": true,
     "paths": {
-      "@billpilot/shared": ["../../packages/shared/src/index.ts"]
+      "@billpilot/shared": [
+        "../../packages/shared/src/index.ts"
+      ]
     }
   },
-  "include": ["src/**/*", "test/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*",
+    "test/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

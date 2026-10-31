@@ -9,6 +9,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { PrismaModule } from './common/prisma/prisma.module';
 import { RedisModule } from './common/redis/redis.module';
 import { EventBusModule } from './common/events/event-bus.module';
+import { CommonAuditModule } from './common/audit/audit.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 
@@ -72,6 +73,7 @@ import { DevController } from './modules/dev/dev.controller';
     PrismaModule,
     RedisModule,
     EventBusModule,
+    CommonAuditModule,
 
     // A
     AuthModule,
