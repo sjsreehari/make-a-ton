@@ -1,6 +1,25 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import type { Channel } from '@billpilot/shared';
+
+export const ALLOWED_TEMPLATE_VARIABLES = [
+  'customerName',
+  'invoiceNumber',
+  'total',
+  'dueDate',
+  'amount',
+  'method',
+  'reference',
+  'remainingBalance',
+  'paymentLink',
+  'pdfUrl',
+  'expiryDate',
+  'subscriptionNumber',
+  'planName',
+  'recoveryLink',
+  'reason',
+  'date',
+];
 
 interface DefaultTemplate {
   key: string;
@@ -10,7 +29,7 @@ interface DefaultTemplate {
 }
 
 const DEFAULT_TEMPLATES: DefaultTemplate[] = [
-  // 11.3 Invoice confirmed delivery
+  // Invoice confirmed delivery
   {
     key: 'invoice_confirmed',
     channel: 'WHATSAPP',
@@ -20,7 +39,7 @@ const DEFAULT_TEMPLATES: DefaultTemplate[] = [
     key: 'invoice_confirmed',
     channel: 'EMAIL',
     subject: 'Your BillPilot Invoice {{invoiceNumber}} (₹{{total}})',
-    body: `<div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; rounded: 8px;">
+    body: `<div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
       <h2 style="color: #4f46e5;">BillPilot Invoice {{invoiceNumber}}</h2>
       <p>Dear {{customerName}},</p>
       <p>Your subscription invoice for the current billing period has been generated.</p>
@@ -34,7 +53,7 @@ const DEFAULT_TEMPLATES: DefaultTemplate[] = [
     </div>`,
   },
 
-  // 11.4 Payment receipt
+  // Payment receipt
   {
     key: 'payment_receipt',
     channel: 'WHATSAPP',
@@ -53,7 +72,7 @@ const DEFAULT_TEMPLATES: DefaultTemplate[] = [
     </div>`,
   },
 
-  // 11.5 Reminders
+  // Reminders
   {
     key: 'reminder_d_minus_3',
     channel: 'WHATSAPP',
@@ -78,33 +97,7 @@ const DEFAULT_TEMPLATES: DefaultTemplate[] = [
   {
     key: 'reminder_overdue_d7',
     channel: 'WHATSAPP',
-    body: `🚨 *Final Reminder: Payment Overdue (7 Days)*\n\nHi {{customerName}}, invoice *{{invoiceNumber}}* is 7 days past due. Your subscription is scheduled for temporary pause if unpaid.\n\nImmediate payment link: {{paymentLink}}`,
-  },
-
-  // 11.6 Renewal alert
-  {
-    key: 'subscription_expiring',
-    channel: 'WHATSAPP',
-    body: `📅 *Subscription Renewal Notice*\n\nHi {{customerName}}, your subscription *{{subscriptionNumber}}* ({{planName}}) renews on *{{expiryDate}}* for ₹{{amount}}.\n\nReply *PAUSE* to hold or *RENEW* to confirm continuation.`,
-  },
-  {
-    key: 'subscription_expiring',
-    channel: 'EMAIL',
-    subject: 'Your subscription renews in 5 days',
-    body: `<p>Hi {{customerName}}, subscription {{subscriptionNumber}} renews on {{expiryDate}}. Contact us or reply to manage your plan.</p>`,
-  },
-
-  // 11.7 Failed payment
-  {
-    key: 'payment_failed',
-    channel: 'WHATSAPP',
-    body: `❌ *Payment Attempt Failed*\n\nHi {{customerName}}, the payment of *₹{{amount}}* for invoice *{{invoiceNumber}}* could not be processed (Reason: {{reason}}).\n\nPlease update your payment method or complete payment using this recovery link:\n🔗 {{recoveryLink}}`,
-  },
-  {
-    key: 'payment_failed',
-    channel: 'EMAIL',
-    subject: 'Action Required: Payment Failed for Invoice {{invoiceNumber}}',
-    body: `<p>Dear {{customerName}}, your scheduled payment of ₹{{amount}} failed due to: {{reason}}.</p><p><a href="{{recoveryLink}}">Update payment details and retry</a></p>`,
+    body: `🚨 *Final Reminder: Payment Overdue (7 Days)*\n\nHi {{customerName}}, invoice *{{invoiceNumber}}* is 7 days past due. A late payment fee may apply if unpaid.\n\nImmediate payment link: {{paymentLink}}`,
   },
 ];
 
@@ -136,6 +129,67 @@ export class TemplatesService implements OnModuleInit {
       }
     }
     this.logger.log('Message templates verified & seeded.');
+  }
+
+  extractVariables(text: string): string[] {
+    const matches = text.match(/\{\{([a-zA-Z0-9_]+)\}\}/g);
+    if (!matches) return [];
+    return Array.from(new Set(matches.map((m) => m.replace(/[{}]/g, ''))));
+  }
+
+  validateTemplate(body: string, subject?: string): void {
+    const varsInBody = this.extractVariables(body);
+    const varsInSubject = subject ? this.extractVariables(subject) : [];
+    const allVars = Array.from(new Set([...varsInBody, ...varsInSubject]));
+
+    const unknownVars = allVars.filter((v) => !ALLOWED_TEMPLATE_VARIABLES.includes(v));
+    if (unknownVars.length > 0) {
+      throw new BadRequestException(
+        `Invalid template variables rejected: ${unknownVars.map((v) => `{{${v}}}`).join(', ')}. Allowed variables are: ${ALLOWED_TEMPLATE_VARIABLES.join(', ')}`,
+      );
+    }
+  }
+
+  preview(dto: {
+    body: string;
+    subject?: string;
+    sampleData?: Record<string, string>;
+  }) {
+    this.validateTemplate(dto.body, dto.subject);
+
+    const defaultSamples: Record<string, string> = {
+      customerName: 'Acme Corporation',
+      invoiceNumber: 'INV-2026-000123',
+      total: '1,499.00',
+      dueDate: '2026-11-15',
+      amount: '1,499.00',
+      method: 'UPI',
+      reference: 'UPI/1234567890',
+      remainingBalance: '0.00',
+      paymentLink: 'https://billing.brightloop.io/pay/inv-123',
+      pdfUrl: 'https://billing.brightloop.io/invoices/inv-123/pdf',
+      expiryDate: '2027-11-01',
+      subscriptionNumber: 'SUB-2026-000045',
+      planName: 'Enterprise Growth',
+      recoveryLink: 'https://billing.brightloop.io/rescue/pay-123',
+      reason: 'Insufficient funds',
+      date: '2026-10-31',
+    };
+
+    const mergedData = { ...defaultSamples, ...(dto.sampleData || {}) };
+
+    const renderText = (str: string) => {
+      return str.replace(/\{\{([a-zA-Z0-9_]+)\}\}/g, (_, key) => {
+        return mergedData[key] !== undefined ? String(mergedData[key]) : `{{${key}}}`;
+      });
+    };
+
+    return {
+      renderedSubject: dto.subject ? renderText(dto.subject) : undefined,
+      renderedBody: renderText(dto.body),
+      detectedVariables: this.extractVariables(dto.body + (dto.subject || '')),
+      sampleDataUsed: mergedData,
+    };
   }
 
   async render(
@@ -184,6 +238,8 @@ export class TemplatesService implements OnModuleInit {
     body: string;
     isActive?: boolean;
   }) {
+    this.validateTemplate(dto.body, dto.subject);
+
     const existing = await this.prisma.messageTemplate.findFirst({
       where: { key: dto.key, channel: dto.channel as any },
     });
@@ -210,4 +266,3 @@ export class TemplatesService implements OnModuleInit {
     });
   }
 }
-
