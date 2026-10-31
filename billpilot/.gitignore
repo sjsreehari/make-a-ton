@@ -10,4 +10,5 @@ prisma/migrations/
 !prisma/migrations/.gitkeep
 .DS_Store
 Thumbs.db
-
+references/
+/references

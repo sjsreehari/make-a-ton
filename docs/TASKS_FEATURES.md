@@ -1,0 +1,60 @@
+# Implementation Tasks & Progress
+
+- [ ] 1. Recurring billing scheduler
+  - [ ] Robust nextBillingDate math (Jan 31 -> Feb 28 -> Mar 31)
+  - [ ] Catch-up of missed periods without double-billing
+  - [ ] Optional number of cycles limit
+  - [ ] Scheduled preview of next 3 invoice dates
+- [ ] 2. Invoice lifecycle and numbering
+  - [ ] Derived PARTIAL and OVERDUE display statuses
+  - [ ] Configurable number pattern (INV-{year}-{seq:6}) in settings
+  - [ ] Locked lines after confirm
+  - [ ] Reverse / cancel rules
+- [ ] 3. Tax handling
+  - [ ] Inclusive vs exclusive tax calculation
+  - [ ] Up to 2 tax rules per line (e.g. CGST + SGST)
+  - [ ] Tax breakdown table on invoice / PDF
+  - [ ] Deterministic rounding
+- [ ] 4. Discounts at line and invoice level
+  - [ ] Clear order of operations (line vs whole document)
+  - [ ] Test matrix covering each combination
+- [ ] 5. Payments, credits and overpayment
+  - [ ] Apply one payment across multiple invoices
+  - [ ] Automatic use of customer credit on next invoice
+  - [ ] Refund record with reason
+  - [ ] Payment-applied history
+- [ ] 6. Quote to invoice conversion
+  - [ ] Quote approval by customer from portal
+  - [ ] Expiry handling
+  - [ ] Conversion carrying lines and terms
+  - [ ] Approval audit entry
+- [ ] 7. Credit notes
+  - [ ] Credit note entity with number and reason
+  - [ ] Auto-reduce amount due
+  - [ ] PDF generation support
+- [ ] 8. Reminder and late-fee schedule
+  - [ ] Configurable schedule table (offset days, template key, optional late fee)
+  - [ ] Late fee added as adjustment line exactly once
+  - [ ] Deduplication to prevent repeat reminder sending
+- [ ] 9. Message templates with variables
+  - [ ] Variable placeholder system
+  - [ ] Template editor with variable picker and live preview
+  - [ ] Validation rejecting unknown variables
+- [ ] 10. Client portal behavior
+  - [ ] Account statement (invoices, payments, balance) as CSV/PDF
+  - [ ] Invoice view tracking ("viewed on <date>")
+  - [ ] Pay-now flow
+- [ ] 11. Activity log
+  - [ ] Rich audit entries (who, what, before/after, source: UI/API/webhook/job)
+  - [ ] Filter by entity and date
+  - [ ] Timeline display on invoice and subscription
+- [ ] 12. Reports and exports
+  - [ ] Aging report (current, 1-30, 31-60, 61-90, 90+)
+  - [ ] Tax summary report
+  - [ ] Payments-by-method report with CSV export (< 2s)
+- [ ] 13. Bulk actions
+  - [ ] Bulk select invoices: confirm, send, cancel, download batch
+  - [ ] Per-item result summary
+- [ ] 14. Invoice PDF design
+  - [ ] Clean layout (header, bill-to, line table, tax breakdown, totals, terms, QR/link, footer)
+  - [ ] Support company logo
