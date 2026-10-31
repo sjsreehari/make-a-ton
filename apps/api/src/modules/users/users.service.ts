@@ -16,7 +16,7 @@ export class UsersService {
     const normalizedEmail = dto.email.toLowerCase().trim();
 
     const existing = await this.prisma.user.findFirst({
-      where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
+      where: { email: normalizedEmail },
     });
 
     if (existing) {
@@ -55,6 +55,25 @@ export class UsersService {
     return user;
   }
 
+  async deleteStaff(id: string, actorId: string) {
+    try {
+      const deleted = await this.prisma.user.delete({ where: { id } });
+      await this.audit.log({
+        actor: { id: actorId, role: 'ADMIN' },
+        entity: 'User',
+        entityId: id,
+        action: 'STAFF_DELETED',
+      });
+      return { success: true, deleted };
+    } catch {
+      const deactivated = await this.prisma.user.update({
+        where: { id },
+        data: { isActive: false },
+      });
+      return { success: true, deactivated };
+    }
+  }
+
   async findAll(params: PaginationParams & { role?: string }) {
     const { skip, take } = parsePagination(params);
     const where: any = {};
@@ -84,5 +103,77 @@ export class UsersService {
       meta: buildMeta(total, params),
     };
   }
-}
 
+  async findCustomers(params: PaginationParams) {
+    const { skip, take } = parsePagination(params);
+    const [customers, total] = await Promise.all([
+      this.prisma.customer.findMany({
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          subscriptions: {
+            select: { id: true, status: true },
+          },
+        },
+      }),
+      this.prisma.customer.count(),
+    ]);
+
+    return {
+      data: customers.map((c) => ({
+        id: c.id,
+        name: c.name,
+        email: c.email,
+        phone: c.phone,
+        company: c.company,
+        gstin: c.gstin,
+        currency: c.currency,
+        creditBalance: c.creditBalance.toFixed(2),
+        activeSubscriptionsCount: c.subscriptions.filter((s) => s.status === 'ACTIVE').length,
+        createdAt: c.createdAt,
+      })),
+      meta: buildMeta(total, params),
+    };
+  }
+
+  async createCustomer(
+    dto: { name: string; email: string; phone?: string; company?: string; gstin?: string },
+    creatorId: string,
+  ) {
+    const customer = await this.prisma.customer.create({
+      data: {
+        name: dto.name,
+        email: dto.email.toLowerCase().trim(),
+        phone: dto.phone,
+        company: dto.company,
+        gstin: dto.gstin,
+      },
+    });
+
+    await this.audit.log({
+      actor: { id: creatorId, role: 'ADMIN' },
+      entity: 'Customer',
+      entityId: customer.id,
+      action: 'CUSTOMER_CREATED',
+      after: customer,
+    });
+
+    return customer;
+  }
+
+  async deleteCustomer(id: string, actorId: string) {
+    try {
+      const deleted = await this.prisma.customer.delete({ where: { id } });
+      await this.audit.log({
+        actor: { id: actorId, role: 'ADMIN' },
+        entity: 'Customer',
+        entityId: id,
+        action: 'CUSTOMER_DELETED',
+      });
+      return { success: true, deleted };
+    } catch (err: any) {
+      return { success: false, message: 'Cannot delete customer with existing subscriptions or invoices' };
+    }
+  }
+}

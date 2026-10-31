@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
@@ -32,5 +32,11 @@ export class DiscountsController {
   ) {
     return this.discountsService.create(dto, user.sub);
   }
-}
 
+  @Delete(':id')
+  @Roles('ADMIN')
+  @ApiOperation({ summary: 'Delete or deactivate discount (Admin only)' })
+  async delete(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.discountsService.delete(id, user.sub);
+  }
+}

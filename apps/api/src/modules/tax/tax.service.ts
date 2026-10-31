@@ -48,5 +48,23 @@ export class TaxService {
 
     return rule;
   }
-}
 
+  async delete(id: string, actorId: string) {
+    try {
+      const deleted = await this.prisma.taxRule.delete({ where: { id } });
+      await this.audit.log({
+        actor: { id: actorId, role: 'ADMIN' },
+        entity: 'TaxRule',
+        entityId: id,
+        action: 'TAX_RULE_DELETED',
+      });
+      return { success: true, deleted };
+    } catch {
+      const deactivated = await this.prisma.taxRule.update({
+        where: { id },
+        data: { isActive: false },
+      });
+      return { success: true, deactivated };
+    }
+  }
+}

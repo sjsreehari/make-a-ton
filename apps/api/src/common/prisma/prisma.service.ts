@@ -8,9 +8,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   async onModuleInit() {
     try {
       await this.$connect();
-      this.logger.log('Connected to PostgreSQL via Prisma');
+      this.logger.log('Connected to MySQL via Prisma');
     } catch (err: any) {
-      this.logger.warn(`PostgreSQL connection failed during init: ${err.message}. Routes requiring database will connect once PostgreSQL is active.`);
+      this.logger.warn(`Database connection failed during init: ${err.message}. Routes requiring database will connect once MySQL is active.`);
     }
   }
 
