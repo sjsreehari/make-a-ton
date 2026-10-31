@@ -642,14 +642,15 @@ export class BillingService implements IInvoiceService {
   async autoApplyCustomerCredit(invoiceId: string): Promise<Decimal> {
     const inv = await this.prisma.invoice.findUnique({
       where: { id: invoiceId },
-      include: { customer: true },
+      include: { subscription: { include: { customer: true } } },
     });
 
-    if (!inv || inv.amountDue.lte(0) || inv.customer.creditBalance.lte(0)) {
+    if (!inv || inv.amountDue.lte(0) || inv.subscription.customer.creditBalance.lte(0)) {
       return new Decimal(0);
     }
 
-    const creditToUse = Decimal.min(inv.customer.creditBalance, inv.amountDue);
+    const customer = inv.subscription.customer;
+    const creditToUse = Decimal.min(customer.creditBalance, inv.amountDue);
 
     await this.prisma.$transaction(async (tx) => {
       // Deduct from customer credit
