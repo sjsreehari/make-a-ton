@@ -1,381 +1,387 @@
 "use client";
 
-import { Text } from "@/components/atoms/Text";
-import { ChartCard } from "@/components/ChartCard";
-import { CostBreakdownChart } from "@/components/charts/CostBreakdownChart";
-import { CumulativeSavingsChart } from "@/components/charts/CumulativeSavingsChart";
-import { ModelBreakdownChart } from "@/components/charts/ModelBreakdownChart";
-import { RouterCostSavingsChart } from "@/components/charts/RouterCostSavingsChart";
-import { SavingsRateChart } from "@/components/charts/SavingsRateChart";
+import { useState } from "react";
+import Link from "next/link";
 import {
-  DashboardPageFilters,
-  useDashboardFilters,
-} from "@/components/DashboardPageFilters";
-import { Card } from "@/components/molecules/Card";
-import { Page } from "@/components/Page";
-import { PageHeader } from "@/components/PageHeader";
-import { ResponsiveGrid } from "@/components/ResponsiveGrid";
-import { RouterOnboarding } from "@/components/RouterOnboarding";
-import { Statistic } from "@/components/Statistic";
+  BarChart3,
+  Layers,
+  FileText,
+  CreditCard,
+  AlertTriangle,
+  PlayCircle,
+  TrendingUp,
+  ArrowUpRight,
+  ArrowDownRight,
+  Clock,
+  CheckCircle2,
+  Send,
+  Zap,
+  Bot,
+  RefreshCw,
+  Search,
+} from "lucide-react";
 import {
-  api,
-  type MetricsSummary,
-  type ModelBreakdownBucket,
-  type TimeseriesBucket,
-} from "@/lib/api";
-import { cn } from "@/lib/cn";
-import { LoadState } from "@/tools/LoadState";
-import { useEffect, useState } from "react";
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  CartesianGrid,
+} from "recharts";
 
-function formatUSD(v: number): string {
-  if (v === 0) return "$0.00";
-  if (Math.abs(v) < 0.001) return `$${v.toFixed(4)}`;
-  return `$${v.toFixed(2)}`;
-}
+const MRR_DATA = [
+  { month: "May", mrr: 2840000, newMrr: 320000, churn: 45000 },
+  { month: "Jun", mrr: 3120000, newMrr: 350000, churn: 70000 },
+  { month: "Jul", mrr: 3390000, newMrr: 380000, churn: 110000 },
+  { month: "Aug", mrr: 3680000, newMrr: 420000, churn: 130000 },
+  { month: "Sep", mrr: 3950000, newMrr: 390000, churn: 120000 },
+  { month: "Oct", mrr: 4285000, newMrr: 460000, churn: 125000 },
+];
 
-function formatNumber(v: number): string {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `${(v / 1_000).toFixed(1)}K`;
-  return String(v);
-}
+const RECENT_INVOICES = [
+  { id: "inv-1", number: "INV-2026-001248", customer: "Apex Global Ltd", amount: "₹24,990", status: "OVERDUE", dueDate: "2 days ago", phone: "+91 98765 43210" },
+  { id: "inv-2", number: "INV-2026-001247", customer: "Zenith Infotech", amount: "₹4,999", status: "PAID", dueDate: "Today", phone: "+91 98234 56789" },
+  { id: "inv-3", number: "INV-2026-001246", customer: "Kavya Enterprises", amount: "₹14,990", status: "OVERDUE", dueDate: "5 days ago", phone: "+91 97123 45678" },
+  { id: "inv-4", number: "INV-2026-001245", customer: "Bright Digital Studio", amount: "₹9,990", status: "PAID", dueDate: "Yesterday", phone: "+91 98456 12345" },
+  { id: "inv-5", number: "INV-2026-001244", customer: "CloudNative Labs", amount: "₹49,990", status: "CONFIRMED", dueDate: "In 3 days", phone: "+91 99887 76655" },
+];
 
-// "checking" suppresses a flash of either surface until the onboarding probe
-// lands.
-type OnboardingState = "checking" | "needed" | "done";
-
-// Set when the user chooses "Skip to dashboard". Persisted rather than held in
-// memory so a refresh doesn't drop them back into a flow they opted out of;
-// the server-side flag still takes over for good once a request is served.
-const SKIP_ONBOARDING_KEY = "weave-router.onboarding-skipped";
-
-function onboardingSkipped(): boolean {
-  if (typeof window === "undefined") return false;
-  try {
-    return window.localStorage.getItem(SKIP_ONBOARDING_KEY) === "true";
-  } catch {
-    // Private-mode/blocked storage: treat as not skipped rather than throwing
-    // on the render path.
-    return false;
-  }
-}
-
-function rememberOnboardingSkipped() {
-  try {
-    window.localStorage.setItem(SKIP_ONBOARDING_KEY, "true");
-  } catch {
-    // Non-fatal: the skip just won't survive this reload.
-  }
-}
+const RECENT_SUBSCRIPTIONS = [
+  { id: "sub-1", number: "SUB-2026-000512", customer: "Acme Logistics", plan: "Enterprise Monthly", seats: 20, amount: "₹19,998/mo", status: "ACTIVE" },
+  { id: "sub-2", number: "SUB-2026-000511", customer: "HyperScale Tech", plan: "Odoo Subscription Monthly", seats: 5, amount: "₹27,795/mo", status: "ACTIVE" },
+  { id: "sub-3", number: "SUB-2026-000510", customer: "Omicron Healthcare", plan: "Pro Yearly", seats: 12, amount: "₹2,99,880/yr", status: "ACTIVE" },
+  { id: "sub-4", number: "SUB-2026-000509", customer: "Vector Media", plan: "Starter Monthly", seats: 2, amount: "₹1,998/mo", status: "PAUSED" },
+];
 
 export default function DashboardPage() {
-  const dashboardFilters = useDashboardFilters("30d");
-  const { fromISO, toISO, granularity, range } = dashboardFilters.filters;
+  const [billingRunning, setBillingRunning] = useState(false);
+  const [billingResult, setBillingResult] = useState<string | null>(null);
+  const [reminderSent, setReminderSent] = useState<string | null>(null);
 
-  const [summary, setSummary] = useState<MetricsSummary | null>(null);
-  const [buckets, setBuckets] = useState<TimeseriesBucket[]>([]);
-  const [modelBuckets, setModelBuckets] = useState<ModelBreakdownBucket[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [onboarding, setOnboarding] = useState<OnboardingState>("checking");
+  const handleRunBilling = () => {
+    setBillingRunning(true);
+    setTimeout(() => {
+      setBillingRunning(false);
+      setBillingResult("Billing run complete! 482 invoices created, 4,758 skipped (already billed), 0 failed.");
+    }, 1200);
+  };
 
-  // A router that has never served a request has nothing to chart, so a fresh
-  // install lands in onboarding instead of on six empty charts. The gate is the
-  // installation-level first_request_served_at, not a key's last_used_at:
-  // that flag survives rotation, so rotating the key that served the first
-  // request can't send an established install back through onboarding.
-  useEffect(() => {
-    let cancelled = false;
-    api.onboarding
-      .get()
-      .then(res => {
-        if (cancelled) return;
-        const served = res.first_request_served_at != null;
-        setOnboarding(served || onboardingSkipped() ? "done" : "needed");
-      })
-      // Non-fatal: on a failed probe show the dashboard rather than trapping
-      // an established install in onboarding.
-      .catch(() => {
-        if (!cancelled) setOnboarding("done");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const handleSendReminder = (invNum: string) => {
+    setReminderSent(invNum);
+    setTimeout(() => setReminderSent(null), 3000);
+  };
 
-  useEffect(() => {
-    if (onboarding !== "done") return;
-    let cancelled = false;
-    setError(null);
-    Promise.all([
-      api.metrics.summary(fromISO, toISO),
-      api.metrics.timeseries(granularity, fromISO, toISO),
-      api.metrics.modelBreakdown(granularity, fromISO, toISO),
-    ])
-      .then(([s, ts, mb]) => {
-        if (cancelled) return;
-        setSummary(s);
-        setBuckets(ts.buckets ?? []);
-        setModelBuckets(mb.buckets ?? []);
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return;
-        setError(err instanceof Error ? err.message : "Failed to load metrics.");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [fromISO, toISO, granularity, onboarding]);
-
-  if (onboarding === "checking") return null;
-  if (onboarding === "needed") {
-    return (
-      <RouterOnboarding
-        onComplete={() => setOnboarding("done")}
-        onSkip={() => {
-          rememberOnboardingSkipped();
-          setOnboarding("done");
-        }}
-      />
-    );
-  }
-
-  if (error) {
-    return (
-      <Page
-        header={
-          <PageHeader
-            left={
-              <Text
-                variant="h4"
-                as="h2"
-                className="flex flex-row items-center gap-1 whitespace-nowrap"
-              >
-                Dashboard
-              </Text>
-            }
-          />
-        }
-      >
-        <Page.Section>
-          <div className="rounded-lg border border-danger/30 bg-danger/5 p-4 text-sm text-danger">
-            {error}
+  return (
+    <div className="flex flex-col h-full overflow-y-auto p-6 space-y-6">
+      {/* Top Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Operations Dashboard</h1>
+            <span className="px-2 py-0.5 rounded-full text-[11px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+              <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Live Engine
+            </span>
           </div>
-        </Page.Section>
-      </Page>
-    );
-  }
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Automated billing lifecycle, cash flow tracking, and revenue health for Brightloop Software.
+          </p>
+        </div>
 
-  const savingsRate =
-    summary == null || summary.total_requested_cost_usd === 0
-      ? 0
-      : (summary.total_savings_usd / summary.total_requested_cost_usd) * 100;
-  const avgTokensPerReq =
-    summary == null || summary.request_count === 0
-      ? 0
-      : summary.total_tokens / summary.request_count;
-  const empty = buckets.length === 0;
-  const modelEmpty = modelBuckets.length === 0;
+        {/* Quick Actions */}
+        <div className="flex items-center gap-2.5">
+          <Link
+            href="/quotes"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-border bg-card hover:bg-muted text-foreground transition-colors shadow-sm"
+          >
+            <Layers className="size-3.5 text-indigo-400" />
+            New Quote
+          </Link>
+          <Link
+            href="/leakage"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-300 transition-colors shadow-sm"
+          >
+            <AlertTriangle className="size-3.5 text-red-400" />
+            ₹84,200 at Risk
+          </Link>
+          <button
+            onClick={handleRunBilling}
+            disabled={billingRunning}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors shadow-md shadow-indigo-600/20 disabled:opacity-50"
+          >
+            <PlayCircle className={`size-3.5 ${billingRunning ? "animate-spin" : ""}`} />
+            {billingRunning ? "Running Billing..." : "⚡ Run Billing Run"}
+          </button>
+        </div>
+      </div>
 
-  return (
-    <Page
-      header={
-        <PageHeader
-          left={
-            <Text
-              variant="h4"
-              as="h2"
-              className="flex flex-row items-center gap-1 whitespace-nowrap"
+      {billingResult && (
+        <div className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="size-4 text-emerald-400" />
+            <span>{billingResult}</span>
+          </div>
+          <button onClick={() => setBillingResult(null)} className="text-emerald-400 hover:text-emerald-200">✕</button>
+        </div>
+      )}
+
+      {/* Metric Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+        <div className="p-4 rounded-xl border border-border bg-card/60 shadow-sm relative overflow-hidden">
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span className="text-xs font-medium">Active Subscriptions</span>
+            <Layers className="size-4 text-indigo-400" />
+          </div>
+          <div className="mt-2 text-2xl font-bold tracking-tight text-foreground font-mono">5,240</div>
+          <div className="mt-1 flex items-center gap-1 text-[11px] text-emerald-400">
+            <ArrowUpRight className="size-3" />
+            <span>+8.4% vs last mo</span>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl border border-border bg-card/60 shadow-sm relative overflow-hidden">
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span className="text-xs font-medium">Monthly Recurring (MRR)</span>
+            <TrendingUp className="size-4 text-emerald-400" />
+          </div>
+          <div className="mt-2 text-2xl font-bold tracking-tight text-foreground font-mono">₹42,85,000</div>
+          <div className="mt-1 flex items-center gap-1 text-[11px] text-emerald-400">
+            <ArrowUpRight className="size-3" />
+            <span>+14.2% expansion</span>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl border border-border bg-card/60 shadow-sm relative overflow-hidden">
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span className="text-xs font-medium">Annual Recurring (ARR)</span>
+            <BarChart3 className="size-4 text-cyan-400" />
+          </div>
+          <div className="mt-2 text-2xl font-bold tracking-tight text-foreground font-mono">₹5.14 Cr</div>
+          <div className="mt-1 flex items-center gap-1 text-[11px] text-zinc-400">
+            <span>Projected annualized</span>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl border border-border bg-card/60 shadow-sm relative overflow-hidden">
+          <div className="flex items-center justify-between text-muted-foreground">
+            <span className="text-xs font-medium">Overdue Invoices</span>
+            <Clock className="size-4 text-amber-400" />
+          </div>
+          <div className="mt-2 text-2xl font-bold tracking-tight text-amber-400 font-mono">14</div>
+          <div className="mt-1 flex items-center gap-1 text-[11px] text-amber-400/90 font-mono">
+            <span>₹2,18,500 total owed</span>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/5 shadow-sm relative overflow-hidden">
+          <div className="flex items-center justify-between text-red-300">
+            <span className="text-xs font-medium">Revenue at Risk</span>
+            <AlertTriangle className="size-4 text-red-400" />
+          </div>
+          <div className="mt-2 text-2xl font-bold tracking-tight text-red-400 font-mono">₹84,200</div>
+          <div className="mt-1 flex items-center gap-1 text-[11px] text-red-400/80">
+            <Link href="/leakage" className="underline hover:text-red-300">6 leakages found →</Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* MRR Waterfall Chart */}
+        <div className="lg:col-span-2 p-5 rounded-xl border border-border bg-card/60 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">MRR Growth & Movement</h2>
+              <p className="text-[11px] text-muted-foreground">Net recurring revenue trajectory over the past 6 months</p>
+            </div>
+            <div className="flex items-center gap-3 text-[11px]">
+              <span className="flex items-center gap-1.5 text-indigo-400">
+                <span className="size-2 rounded-full bg-indigo-500" /> MRR (₹)
+              </span>
+              <span className="flex items-center gap-1.5 text-emerald-400">
+                <span className="size-2 rounded-full bg-emerald-500" /> New Expansion
+              </span>
+            </div>
+          </div>
+
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={MRR_DATA}>
+                <defs>
+                  <linearGradient id="mrrGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0.0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+                <XAxis dataKey="month" stroke="#71717a" fontSize={11} tickLine={false} />
+                <YAxis stroke="#71717a" fontSize={11} tickLine={false} tickFormatter={(v) => `₹${(v / 100000).toFixed(0)}L`} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: "#18181b", borderColor: "#27272a", borderRadius: "8px", fontSize: "12px" }}
+                  formatter={(value: any) => [`₹${Number(value).toLocaleString("en-IN")}`, "Amount"]}
+                />
+                <Area type="monotone" dataKey="mrr" stroke="#6366f1" strokeWidth={2.5} fillOpacity={1} fill="url(#mrrGrad)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* AI & Automation Quick Insight */}
+        <div className="p-5 rounded-xl border border-indigo-500/20 bg-gradient-to-b from-indigo-500/10 via-card/60 to-card/60 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="size-7 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center">
+                <Bot className="size-4 text-indigo-400" />
+              </div>
+              <span className="text-xs font-semibold text-foreground">AI Finance Insights</span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed mt-2">
+              Automated audit detected <strong className="text-foreground">₹84,200</strong> in revenue leakage:
+            </p>
+            <ul className="mt-3 space-y-2 text-xs text-zinc-300">
+              <li className="flex items-start gap-2">
+                <span className="size-1.5 rounded-full bg-red-400 mt-1.5 shrink-0" />
+                <span>3 active subscriptions never received an invoice.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="size-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
+                <span>2 expired discount vouchers (15%) still applied.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="size-1.5 rounded-full bg-cyan-400 mt-1.5 shrink-0" />
+                <span>Payment rescue recovered ₹42,500 today via timed retries.</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="pt-4 border-t border-border mt-4 flex flex-col gap-2">
+            <Link
+              href="/ai-assistant"
+              className="w-full text-center py-2 px-3 rounded-md text-xs font-medium bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 transition-colors"
             >
-              Router cost &amp; savings
-            </Text>
-          }
-        />
-      }
-    >
-      <Page.Section>
-        <DashboardPageFilters result={dashboardFilters} />
-        <ResponsiveGrid>
-          <MetricCard
-            className={ResponsiveGrid.Small}
-            label="Cost saved"
-            value={summary == null ? "—" : formatUSD(Math.abs(summary.total_savings_usd))}
-            sub={
-              summary == null
-                ? undefined
-                : summary.total_savings_usd >= 0
-                  ? `${savingsRate.toFixed(1)}% of requested`
-                  : "Over requested cost"
-            }
-            accent={
-              summary == null
-                ? "default"
-                : summary.total_savings_usd >= 0
-                  ? "success"
-                  : "danger"
-            }
-          />
-          <MetricCard
-            className={ResponsiveGrid.Small}
-            label="Requests"
-            value={summary == null ? "—" : formatNumber(summary.request_count)}
-            sub={
-              summary == null ? undefined : `actual ${formatUSD(summary.total_actual_cost_usd)}`
-            }
-          />
-          <MetricCard
-            className={ResponsiveGrid.Small}
-            label="Tokens"
-            value={summary == null ? "—" : formatNumber(summary.total_tokens)}
-            sub={summary == null ? undefined : `${formatNumber(avgTokensPerReq)} avg / req`}
-          />
+              Ask AI Assistant a Question →
+            </Link>
+            <Link
+              href="/leakage"
+              className="w-full text-center py-2 px-3 rounded-md text-xs font-medium bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/20 transition-colors"
+            >
+              Run One-Click Leakage Fixes →
+            </Link>
+          </div>
+        </div>
+      </div>
 
-          <ChartCard
-            className={ResponsiveGrid.Full}
-            title="Router cost savings"
-            subtitle="Actual cost vs. what would have been charged for the requested model."
-            topRight={
-              <Statistic
-                statistic={
-                  summary == null
-                    ? LoadState.loading()
-                    : LoadState.loaded({
-                        total:
-                          summary.total_savings_usd >= 0
-                            ? `${formatUSD(summary.total_savings_usd)} saved`
-                            : `${formatUSD(Math.abs(summary.total_savings_usd))} extra`,
-                      })
-                }
-              />
-            }
-          >
-            {empty ? (
-              <EmptyChart />
-            ) : (
-              <RouterCostSavingsChart buckets={buckets} granularity={granularity} />
-            )}
-          </ChartCard>
+      {/* Tables Section: Overdue Invoices & Active Subscriptions */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Overdue Invoices Chaser */}
+        <div className="p-5 rounded-xl border border-border bg-card/60 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">Priority Collections & Overdue</h2>
+              <p className="text-[11px] text-muted-foreground">Direct WhatsApp chase & Razorpay payment links</p>
+            </div>
+            <Link href="/invoices" className="text-xs text-indigo-400 hover:underline">View All →</Link>
+          </div>
 
-          <ChartCard
-            className={ResponsiveGrid.Medium}
-            title="Cumulative savings"
-            subtitle={`Running total of dollars saved across the ${range.label.toLowerCase()}.`}
-          >
-            {empty ? (
-              <EmptyChart height={220} />
-            ) : (
-              <CumulativeSavingsChart buckets={buckets} granularity={granularity} />
-            )}
-          </ChartCard>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-border text-muted-foreground">
+                  <th className="pb-2 font-medium">Invoice</th>
+                  <th className="pb-2 font-medium">Customer</th>
+                  <th className="pb-2 font-medium">Amount</th>
+                  <th className="pb-2 font-medium">Status</th>
+                  <th className="pb-2 text-right font-medium">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {RECENT_INVOICES.map((inv) => (
+                  <tr key={inv.id} className="hover:bg-muted/40 transition-colors">
+                    <td className="py-2.5 font-mono text-foreground font-medium">{inv.number}</td>
+                    <td className="py-2.5 text-zinc-300">{inv.customer}</td>
+                    <td className="py-2.5 font-mono font-medium text-foreground">{inv.amount}</td>
+                    <td className="py-2.5">
+                      <span
+                        className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium font-mono ${
+                          inv.status === "PAID"
+                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                            : inv.status === "OVERDUE"
+                            ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                            : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                        }`}
+                      >
+                        {inv.status}
+                      </span>
+                    </td>
+                    <td className="py-2.5 text-right">
+                      {inv.status === "OVERDUE" ? (
+                        <button
+                          onClick={() => handleSendReminder(inv.number)}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 transition-colors"
+                        >
+                          <Send className="size-2.5" />
+                          {reminderSent === inv.number ? "Sent!" : "WhatsApp Chase"}
+                        </button>
+                      ) : (
+                        <span className="text-[11px] text-muted-foreground">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-          <ChartCard
-            className={ResponsiveGrid.Medium}
-            title="Savings rate"
-            subtitle="Percent of requested cost avoided per bucket."
-          >
-            {empty ? (
-              <EmptyChart height={200} />
-            ) : (
-              <SavingsRateChart buckets={buckets} granularity={granularity} />
-            )}
-          </ChartCard>
+        {/* Subscriptions Registry Snippet */}
+        <div className="p-5 rounded-xl border border-border bg-card/60 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">Recent Subscriptions</h2>
+              <p className="text-[11px] text-muted-foreground">Lifecycle states, recurring rates & plan tiers</p>
+            </div>
+            <Link href="/subscriptions" className="text-xs text-indigo-400 hover:underline">View All →</Link>
+          </div>
 
-          <ChartCard
-            className={ResponsiveGrid.Full}
-            title="Cost breakdown per bucket"
-            subtitle="Actual cost stacked with realized savings."
-          >
-            {empty ? (
-              <EmptyChart height={220} />
-            ) : (
-              <CostBreakdownChart buckets={buckets} granularity={granularity} />
-            )}
-          </ChartCard>
-
-          <ChartCard
-            className={ResponsiveGrid.Medium}
-            title="Model usage"
-            subtitle="Requests per bucket broken down by the model the router selected."
-          >
-            {modelEmpty ? (
-              <EmptyChart height={220} />
-            ) : (
-              <ModelBreakdownChart
-                buckets={modelBuckets}
-                granularity={granularity}
-                metric="requests"
-              />
-            )}
-          </ChartCard>
-
-          <ChartCard
-            className={ResponsiveGrid.Medium}
-            title="Model spend"
-            subtitle="Actual cost per bucket broken down by the model the router selected."
-          >
-            {modelEmpty ? (
-              <EmptyChart height={220} />
-            ) : (
-              <ModelBreakdownChart
-                buckets={modelBuckets}
-                granularity={granularity}
-                metric="spend"
-              />
-            )}
-          </ChartCard>
-        </ResponsiveGrid>
-      </Page.Section>
-    </Page>
-  );
-}
-
-interface MetricCardProps {
-  className?: string;
-  label: string;
-  value: string;
-  sub?: string;
-  accent?: "default" | "success" | "danger" | "info";
-}
-
-function MetricCard({ className, label, value, sub, accent = "default" }: MetricCardProps) {
-  const accentClass =
-    accent === "success"
-      ? "text-success"
-      : accent === "danger"
-        ? "text-danger"
-        : accent === "info"
-          ? "text-primary"
-          : "text-foreground";
-
-  return (
-    <Card size="sm" className={className}>
-      <Card.Header>
-        <Text className="text-2xs font-medium uppercase tracking-wider text-muted-foreground">
-          {label}
-        </Text>
-      </Card.Header>
-      <Card.Content>
-        <Text
-          className={cn(
-            "font-display text-2xl font-semibold tabular-nums tracking-tight",
-            accentClass,
-          )}
-        >
-          {value}
-        </Text>
-        {sub != null && (
-          <Text className="mt-1 text-2xs text-muted-foreground">{sub}</Text>
-        )}
-      </Card.Content>
-    </Card>
-  );
-}
-
-function EmptyChart({ height = 240 }: { height?: number }) {
-  return (
-    <div
-      className="flex items-center justify-center text-2xs text-muted-foreground"
-      style={{ height }}
-    >
-      No data for this period
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-border text-muted-foreground">
+                  <th className="pb-2 font-medium">Subscription #</th>
+                  <th className="pb-2 font-medium">Customer</th>
+                  <th className="pb-2 font-medium">Plan</th>
+                  <th className="pb-2 font-medium">Rate</th>
+                  <th className="pb-2 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {RECENT_SUBSCRIPTIONS.map((sub) => (
+                  <tr key={sub.id} className="hover:bg-muted/40 transition-colors">
+                    <td className="py-2.5 font-mono text-foreground font-medium">{sub.number}</td>
+                    <td className="py-2.5 text-zinc-300">{sub.customer}</td>
+                    <td className="py-2.5 text-zinc-400">{sub.plan}</td>
+                    <td className="py-2.5 font-mono font-medium text-foreground">{sub.amount}</td>
+                    <td className="py-2.5">
+                      <span
+                        className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium font-mono ${
+                          sub.status === "ACTIVE"
+                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                            : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                        }`}
+                      >
+                        {sub.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
