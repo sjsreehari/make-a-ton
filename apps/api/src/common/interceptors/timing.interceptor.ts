@@ -16,9 +16,10 @@ export class TimingInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap(() => {
-        response.setHeader('X-Response-Time', `${Date.now() - start}ms`);
+        if (response && !response.headersSent) {
+          response.setHeader('X-Response-Time', `${Date.now() - start}ms`);
+        }
       }),
     );
   }
 }
-

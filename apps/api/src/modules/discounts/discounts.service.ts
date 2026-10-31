@@ -18,7 +18,7 @@ export class DiscountsService {
       this.prisma.discount.findMany({
         skip,
         take,
-        orderBy: { createdAt: 'desc' } as any,
+        orderBy: { startsAt: 'desc' },
       }),
       this.prisma.discount.count(),
     ]);

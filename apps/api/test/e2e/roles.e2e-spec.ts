@@ -43,16 +43,16 @@ describe('Roles Guard (e2e)', () => {
 
   it('allows ADMIN to access @Roles(ADMIN) endpoints', async () => {
     const res = await request(app.getHttpServer())
-      .get('/api/v1/admin/ping')
+      .get('/api/v1/users')
       .set('Authorization', `Bearer ${adminToken}`);
 
     expect(res.status).toBe(200);
-    expect(res.body.role).toBe('ADMIN');
+    expect(res.body.data).toBeDefined();
   });
 
   it('denies CUSTOMER access to @Roles(ADMIN) endpoints with 403 Forbidden', async () => {
     const res = await request(app.getHttpServer())
-      .get('/api/v1/admin/ping')
+      .get('/api/v1/users')
       .set('Authorization', `Bearer ${customerToken}`);
 
     expect(res.status).toBe(403);
